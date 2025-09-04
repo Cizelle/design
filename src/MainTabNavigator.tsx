@@ -1,22 +1,27 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { createNativeStackNavigator, NativeStackScreenProps } from '@react-navigation/native-stack';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ParamListBase } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import DashboardScreen from './DashboardScreen';
 import ReportHazardScreen from './ReportHazardScreen';
 import DonationScreen from './DonationScreen';
+import DrawerMenu from './components/DrawerMenu';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import FamilyScreen from './FamilyScreen';
+import AddFamilyMemberScreen from './AddFamilyMemberScreen';
+import ProfileScreen from './ProfileScreen';
+import AddInfoPersonalScreen from './AddInfoPersonalScreen';
+import AddInfoMedicalScreen from './AddInfoMedicalScreen';
+import ProfileConfirmationScreen from './ProfileConfirmationScreen';
 
 // Placeholder screens for other tabs
 const FamilyScreen = () => <></>;
-const SosScreen = () => <></>;
+import SosScreen from './SosScreen';
 const OfflineScreen = () => <></>;
-const ProfileScreen = () => <></>;
 
 const Tab = createBottomTabNavigator();
 const DashboardStack = createNativeStackNavigator();
+const Drawer = createDrawerNavigator();
 
 // Define the type for the nested Dashboard Stack
 export type DashboardStackParamList = {
@@ -25,17 +30,15 @@ export type DashboardStackParamList = {
   Donate: undefined;
 };
 
-// Define the type for the Tab Navigator's props
-type MainTabProps = {
-  route: {
-    params: {
-      username: string;
-    };
-  };
+export type ProfileStackParamList = {
+  ProfileHome: undefined;
+  AddPersonal: undefined;
+  AddMedical: undefined;
+  ProfileConfirmation: undefined;
 };
 
 // Define the navigation stack for the Dashboard tab
-const DashboardStackScreen = ({ route }: MainTabProps) => {
+const DashboardStackScreen = ({ route }: any) => {
   const { username } = route.params;
   return (
     <DashboardStack.Navigator screenOptions={{ headerShown: false }}>
@@ -50,41 +53,60 @@ const DashboardStackScreen = ({ route }: MainTabProps) => {
   );
 };
 
-// Define a function to get the icon name based on the route
-const getIconName = (routeName: string, focused: boolean) => {
-  let iconName;
-  switch (routeName) {
-    case 'Dashboard':
-      iconName = focused ? 'home-variant' : 'home-variant-outline';
-      break;
-    case 'Family':
-      iconName = focused ? 'account-group' : 'account-group-outline';
-      break;
-    case 'SOS':
-      iconName = 'alert-octagon';
-      break;
-    case 'Offline':
-      iconName = focused ? 'signal-off' : 'signal-off';
-      break;
-    case 'Profile':
-      iconName = focused ? 'account-circle' : 'account-circle-outline';
-      break;
-    default:
-      iconName = 'help-circle';
-  }
-  return iconName;
+const FamilyStack = createNativeStackNavigator();
+
+const FamilyStackScreen = () => {
+  return (
+    <FamilyStack.Navigator screenOptions={{ headerShown: false }}>
+      <FamilyStack.Screen name="FamilyHome" component={FamilyScreen} />
+      <FamilyStack.Screen name="AddFamilyMember" component={AddFamilyMemberScreen} />
+    </FamilyStack.Navigator>
+  );
 };
 
-const MainTabNavigator = ({ route }: MainTabProps) => {
-  const { username } = route.params;
+const ProfileStack = createNativeStackNavigator();
 
+const ProfileStackScreen = () => {
+  return (
+    <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
+      <ProfileStack.Screen name="ProfileHome" component={ProfileScreen} />
+      <ProfileStack.Screen name="AddPersonal" component={AddInfoPersonalScreen} />
+      <ProfileStack.Screen name="AddMedical" component={AddInfoMedicalScreen} />
+      <ProfileStack.Screen name="ProfileConfirmation" component={ProfileConfirmationScreen} />
+    </ProfileStack.Navigator>
+  );
+};
+
+// Main Tab Navigator
+const MainTabs = ({ route }: any) => {
+  const { username } = route.params;
   return (
     <Tab.Navigator
       initialRouteName="Dashboard"
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => (
-          <Icon name={getIconName(route.name, focused)} size={size} color={color} />
-        ),
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+          switch (route.name) {
+            case 'Dashboard':
+              iconName = focused ? 'home-variant' : 'home-variant-outline';
+              break;
+            case 'Family':
+              iconName = focused ? 'account-group' : 'account-group-outline';
+              break;
+            case 'SOS':
+              iconName = 'alert-octagon';
+              break;
+            case 'Offline':
+              iconName = focused ? 'signal-off' : 'signal-off';
+              break;
+            case 'Profile':
+              iconName = focused ? 'account-circle' : 'account-circle-outline';
+              break;
+            default:
+              iconName = 'help-circle';
+          }
+          return <Icon name={iconName} size={size} color={color} />;
+        },
         tabBarActiveTintColor: '#138D35',
         tabBarInactiveTintColor: '#999',
         tabBarStyle: {
@@ -103,12 +125,29 @@ const MainTabNavigator = ({ route }: MainTabProps) => {
         component={DashboardStackScreen}
         initialParams={{ username }}
       />
-      <Tab.Screen name="Family" component={FamilyScreen} />
+      <Tab.Screen name="Family" component={FamilyStackScreen} />
       <Tab.Screen name="SOS" component={SosScreen} />
       <Tab.Screen name="Offline" component={OfflineScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Profile" component={ProfileStackScreen} />
     </Tab.Navigator>
   );
 };
 
-export default MainTabNavigator;
+// Main Drawer Navigator that wraps the Tab Navigator
+const MainDrawerNavigator = ({ route }: any) => {
+  const { username } = route.params;
+  return (
+    <Drawer.Navigator
+      drawerContent={props => <DrawerMenu {...props} />}
+      screenOptions={{ headerShown: false }}
+    >
+      <Drawer.Screen
+        name="MainTabs"
+        component={MainTabs}
+        initialParams={{ username }}
+      />
+    </Drawer.Navigator>
+  );
+};
+
+export default MainDrawerNavigator;

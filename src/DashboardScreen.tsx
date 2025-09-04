@@ -19,17 +19,22 @@ const DashboardScreen: React.FC<Props> = ({ route }) => {
     <ScrollView style={styles.container}>
       {/* Top Header */}
       <View style={styles.header}>
-        <View style={styles.appInfo}>
-          <Icon name="waves" size={30} color="#138D35" />
-          <View style={styles.appNameContainer}>
-            <Text style={styles.appName}>Sahayak</Text>
-            <Text style={styles.appTagline}>Disaster Management</Text>
-          </View>
-        </View>
-        <TouchableOpacity style={styles.profileIconContainer}>
-          <Icon name="account-circle" size={40} color="#138D35" />
-        </TouchableOpacity>
-      </View>
+  {/* Hamburger Menu Icon */}
+  <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuIconContainer}>
+    <Icon name="menu" size={30} color="#333" />
+  </TouchableOpacity>
+  
+  <View style={styles.appInfo}>
+    <Icon name="waves" size={30} color="#138D35" />
+    <View style={styles.appNameContainer}>
+      <Text style={styles.appName}>Sahayak</Text>
+      <Text style={styles.appTagline}>Disaster Management</Text>
+    </View>
+  </View>
+  <TouchableOpacity style={styles.profileIconContainer}>
+    <Icon name="account-circle" size={40} color="#138D35" />
+  </TouchableOpacity>
+</View>
 
       {/* Welcome Banner */}
       <View style={styles.welcomeBanner}>
@@ -398,6 +403,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  menuIconContainer: {
+    paddingRight: 15,
+},
 });
 
 export default DashboardScreen;

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView,
+  View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView, Image,
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 const eventTypes = ['Tsunami', 'High Wave', 'Flooding', 'Storm Surge', 'SOS', 'Other'];
 const reportCategories = ['Observation', 'SOS'];
@@ -17,6 +18,7 @@ const ReportHazardScreen = () => {
   const [locationDescription, setLocationDescription] = useState('');
   const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [mediaFiles, setMediaFiles] = useState<any[]>([]); // New state for media files
 
   useEffect(() => {
     fetchUserLocation();
@@ -41,6 +43,27 @@ const ReportHazardScreen = () => {
     );
   };
 
+  const handleMediaUpload = (type: 'photo' | 'video') => {
+    launchImageLibrary({
+      mediaType: type,
+      quality: 1,
+      selectionLimit: 5, // Allow up to 5 files to be selected
+    }, (response) => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.errorCode) {
+        console.log('ImagePicker Error: ', response.errorCode);
+      } else if (response.assets) {
+        const newFiles = response.assets.map(asset => ({
+          uri: asset.uri,
+          fileName: asset.fileName,
+          type: asset.type?.startsWith('photo') ? 'Image' : 'Video'
+        }));
+        setMediaFiles(prevFiles => [...prevFiles, ...newFiles]);
+      }
+    });
+  };
+
   const handleReport = () => {
     if (!eventType || !description || !coords) {
       Alert.alert('Incomplete Form', 'Please fill all required fields and ensure location is found.');
@@ -54,6 +77,11 @@ const ReportHazardScreen = () => {
       locationDescription,
       latitude: coords.latitude,
       longitude: coords.longitude,
+      mediaFiles: mediaFiles.map(file => ({
+        type: file.type,
+        fileName: file.fileName,
+        uri: file.uri,
+      }))
     };
     console.log('Hazard Report Data:', reportData);
     // Simulate API call
@@ -148,6 +176,44 @@ const ReportHazardScreen = () => {
           value={locationDescription}
           onChangeText={setLocationDescription}
         />
+        
+        {/* New Media Upload Section */}
+        <Text style={styles.inputLabel}>Upload Media (Optional)</Text>
+        <View style={styles.uploadButtonsContainer}>
+          <TouchableOpacity
+            style={styles.uploadButton}
+            onPress={() => handleMediaUpload('photo')}
+          >
+            <Icon name="image-outline" size={24} color="#333" />
+            <Text style={styles.uploadButtonText}>Image</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.uploadButton}
+            onPress={() => handleMediaUpload('video')}
+          >
+            <Icon name="video-outline" size={24} color="#333" />
+            <Text style={styles.uploadButtonText}>Video</Text>
+          </TouchableOpacity>
+        </View>
+        
+        {mediaFiles.length > 0 && (
+          <View style={styles.mediaPreviewContainer}>
+            <Text style={styles.mediaPreviewTitle}>Selected Files:</Text>
+            {mediaFiles.map((file, index) => (
+              <View key={index} style={styles.mediaItem}>
+                {file.type === 'Image' ? (
+                  <Image source={{ uri: file.uri }} style={styles.mediaImage} />
+                ) : (
+                  <View style={styles.videoPlaceholder}>
+                    <Icon name="play-circle-outline" size={24} color="#fff" />
+                    <Text style={styles.videoPlaceholderText}>Video</Text>
+                  </View>
+                )}
+                <Text style={styles.mediaFileName}>{file.fileName}</Text>
+              </View>
+            ))}
+          </View>
+        )}
 
         <TouchableOpacity style={styles.mainButton} onPress={handleReport}>
           <Text style={styles.mainButtonText}>Submit Report</Text>
@@ -263,6 +329,71 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderWidth: 1,
     borderColor: '#e0e0e0',
+  },
+  uploadButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 5,
+  },
+  uploadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f6f6f6',
+    borderRadius: 8,
+    paddingVertical: 15,
+    width: '48%',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  uploadButtonText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '600',
+  },
+  mediaPreviewContainer: {
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#eee',
+    borderRadius: 10,
+    padding: 15,
+    backgroundColor: '#fafafa',
+  },
+  mediaPreviewTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+  },
+  mediaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  mediaImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 10,
+  },
+  videoPlaceholder: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 10,
+    backgroundColor: '#555',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  videoPlaceholderText: {
+    color: '#fff',
+    fontSize: 12,
+  },
+  mediaFileName: {
+    fontSize: 14,
+    color: '#333',
+    flex: 1,
   },
   mainButton: {
     width: "100%",
