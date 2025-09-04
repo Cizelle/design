@@ -3,11 +3,16 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './src/LoginScreen';
 import RegisterScreen from './src/RegisterScreen';
+import ChooseRoleScreen from './src/ChooseRoleScreen';
+import MainTabNavigator from './src/MainTabNavigator'; // Import the new tab navigator
 
-// Define the types for your navigation stack
+// This defines the screens in your main stack.
+// 'MainTabs' is now a screen that contains the entire tab bar.
 export type RootStackParamList = {
   Login: undefined;
-  Register: undefined;
+  ChooseRole: undefined;
+  Register: { role: 'citizen' | 'official' | 'analyst' };
+  MainTabs: { username: string }; // Pass username to the main app
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -22,8 +27,18 @@ const App = () => {
           options={{ headerShown: false }}
         />
         <Stack.Screen
+          name="ChooseRole"
+          component={ChooseRoleScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name="Register"
           component={RegisterScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="MainTabs"
+          component={MainTabNavigator}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

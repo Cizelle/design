@@ -1,46 +1,39 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView
+  View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert
 } from 'react-native';
-import { launchImageLibrary } from 'react-native-image-picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
-import AppHeader from './components/AppHeader'; // Import the new Header
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; // For eye icon
+import AppHeader from './components/AppHeader';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
-  const [photo, setPhoto] = useState<string | undefined>();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // State for password visibility
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handlePhotoPick = async () => {
-    const result = await launchImageLibrary({ mediaType: "photo" });
-    if (result.assets && result.assets.length > 0) {
-      setPhoto(result.assets[0].uri);
+  // New function to handle login logic and navigation
+  const handleLogin = () => {
+    // For now, we'll just check if a username is entered.
+    // In a real app, this is where you'd call your authentication API.
+    if (username.trim() === '') {
+      Alert.alert('Login Failed', 'Please enter a username to continue.');
+      return;
     }
+
+    // Navigate to the MainTabs navigator and pass the username
+    navigation.navigate('MainTabs', { username: username });
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-      <View style={styles.card}>
-        <AppHeader title="Login" subtitle="Welcome back to Disaster Manager" />
+    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <AppHeader title="Login" subtitle="Welcome back to Disaster Manager" />
+      
+      <Text style={styles.welcomeText}>Welcome to Sahayak</Text>
 
-        <TouchableOpacity style={styles.photoUploadContainer} onPress={handlePhotoPick}>
-          <View style={styles.photoCircle}>
-            {photo
-              ? <Image source={{ uri: photo }} style={styles.photoImg} />
-              : <Icon name="camera" size={40} color="#a0a0a0" />}
-          </View>
-          <View style={styles.uploadIconContainer}>
-            <Icon name="upload" size={20} color="#138D35" />
-          </View>
-        </TouchableOpacity>
-        <Text style={styles.uploadPhotoText}>Upload Photo *</Text>
-        <Text style={styles.requiredText}>Required</Text>
-
+      <View style={styles.content}>
         <Text style={styles.inputLabel}>Username *</Text>
         <TextInput
           style={styles.input}
@@ -62,12 +55,13 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <Icon name={showPassword ? "eye-off" : "eye"} size={24} color="#777" />
           </TouchableOpacity>
         </View>
-        
+
         <TouchableOpacity style={styles.forgotPasswordButton}>
           <Text style={styles.forgotPasswordText}>Forgot password?</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.mainButton}>
+        {/* Updated onPress to call the new handleLogin function */}
+        <TouchableOpacity style={styles.mainButton} onPress={handleLogin}>
           <Text style={styles.mainButtonText}>Login</Text>
         </TouchableOpacity>
 
@@ -75,7 +69,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           <Icon name="google" size={20} color="#DA4831" style={styles.oauthIcon} />
           <Text style={styles.oauthText}>Login with Google</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={styles.otpButton}>
           <Icon name="message-text" size={20} color="#FFBF00" style={styles.oauthIcon} />
           <Text style={styles.otpText}>Login with OTP</Text>
@@ -83,7 +77,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
         <View style={styles.switchRow}>
           <Text style={styles.switchText}>Don’t have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+          <TouchableOpacity onPress={() => navigation.navigate('ChooseRole')}>
             <Text style={styles.switchLink}>Register</Text>
           </TouchableOpacity>
         </View>
@@ -93,69 +87,26 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  scrollContainer: {
+  container: {
     flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f2f2f2', // Light grey background for the whole page
-    paddingVertical: 20,
-  },
-  card: {
-    width: '90%',
-    maxWidth: 400,
     backgroundColor: '#fff',
-    borderRadius: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-    alignItems: 'center',
-    overflow: 'hidden', // Ensures header radius is respected
+    paddingBottom: 20,
   },
-  photoUploadContainer: {
-    position: 'relative',
-    alignItems: 'center',
-    marginBottom: 5,
-    marginTop: 15, // Space from header
+  welcomeText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+    marginVertical: 20,
+    width: '100%',
   },
-  photoCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  photoImg: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
-  uploadIconContainer: {
-    position: 'absolute',
-    bottom: 0,
-    right: -5,
-    backgroundColor: '#D4EDDA', // Light green background for upload icon
-    borderRadius: 15,
-    padding: 5,
-  },
-  uploadPhotoText: {
-    fontSize: 14,
-    color: '#138D35',
-    fontWeight: '600',
-    marginTop: 8,
-  },
-  requiredText: {
-    fontSize: 12,
-    color: '#999',
-    marginBottom: 20,
-  },
-  inputLabel: {
+  content: {
     width: '90%',
     alignSelf: 'center',
+    alignItems: 'center',
+  },
+  inputLabel: {
+    width: '100%',
     color: '#333',
     fontSize: 14,
     fontWeight: '500',
@@ -163,11 +114,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   input: {
-    width: '90%',
+    width: '100%',
     backgroundColor: '#f6f6f6',
     borderRadius: 8,
     height: 50,
-    marginBottom: 10, // Reduced from 16 to fit labels
+    marginBottom: 10,
     fontSize: 16,
     paddingHorizontal: 15,
     borderWidth: 1,
@@ -176,7 +127,7 @@ const styles = StyleSheet.create({
   passwordInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '90%',
+    width: '100%',
     backgroundColor: '#f6f6f6',
     borderRadius: 8,
     height: 50,
@@ -195,7 +146,8 @@ const styles = StyleSheet.create({
   },
   forgotPasswordButton: {
     alignSelf: 'flex-end',
-    marginRight: '5%',
+    width: '100%',
+    alignItems: 'flex-end',
     marginBottom: 20,
   },
   forgotPasswordText: {
@@ -203,7 +155,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   mainButton: {
-    width: "90%",
+    width: "100%",
     padding: 15,
     backgroundColor: "#138D35",
     borderRadius: 8,
@@ -217,7 +169,7 @@ const styles = StyleSheet.create({
   },
   oauthButton: {
     flexDirection: 'row',
-    width: "90%",
+    width: "100%",
     padding: 12,
     borderRadius: 8,
     borderColor: "#e0e0e0",
@@ -237,7 +189,7 @@ const styles = StyleSheet.create({
   },
   otpButton: {
     flexDirection: 'row',
-    width: "90%",
+    width: "100%",
     padding: 12,
     borderRadius: 8,
     borderColor: "#FFBF00",
@@ -255,7 +207,7 @@ const styles = StyleSheet.create({
   switchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 30, // Space from bottom of card
+    marginBottom: 30,
   },
   switchText: {
     fontSize: 14,
