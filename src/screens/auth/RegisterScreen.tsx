@@ -1,7 +1,14 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, Alert
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -10,6 +17,8 @@ import AppHeader from '../../components/AppHeader';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import RoleSpecificFields from '../../components/RoleSpecificFields';
 import { useTranslation } from 'react-i18next';
+// FIX: Use your custom API client instead of Supabase
+import apiClient from '../../api/client';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
@@ -17,39 +26,54 @@ const RegisterScreen: React.FC<Props> = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { role } = route.params;
 
-  const [photo, setPhoto] = useState<string | undefined>();
+  const [photo, setPhoto] = useState<string>();
   const [fullname, setFullname] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [city, setCity] = useState('');
-  const [state, setState] = useState('');
+  const [stateText, setStateText] = useState('');
   const [country, setCountry] = useState('');
   const [designation, setDesignation] = useState('');
   const [organizationName, setOrganizationName] = useState('');
   const [employeeId, setEmployeeId] = useState('');
-  const [idProofUri, setIdProofUri] = useState<string | undefined>();
-  const [authorizationLetterUri, setAuthorizationLetterUri] = useState<string | undefined>();
+  const [idProofUri, setIdProofUri] = useState<string>();
+  const [authorizationLetterUri, setAuthorizationLetterUri] = useState<string>();
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   const handlePhotoPick = async () => {
-    const result = await launchImageLibrary({ mediaType: "photo" });
-    if (result.assets && result.assets.length > 0) {
+    const result = await launchImageLibrary({ mediaType: 'photo' });
+    if (result.assets && result.assets.length) {
       setPhoto(result.assets[0].uri);
     }
   };
 
   const handleNextStep = () => {
-    if (!fullname || !email || !phone || !password || !confirmPassword || !photo || !city || !state || !country) {
-      Alert.alert(t('register.alert.missingInfoTitle'), t('register.alert.missingInfoMessage'));
-      return;
+    if (
+      !fullname ||
+      !email ||
+      !phone ||
+      !password ||
+      !confirmPassword ||
+      !photo ||
+      !city ||
+      !stateText ||
+      !country
+    ) {
+      return Alert.alert(
+        t('register.alert.missingInfoTitle'),
+        t('register.alert.missingInfoMessage'),
+      );
     }
     if (password !== confirmPassword) {
-      Alert.alert(t('register.alert.passwordMismatchTitle'), t('register.alert.passwordMismatchMessage'));
-      return;
+      return Alert.alert(
+        t('register.alert.passwordMismatchTitle'),
+        t('register.alert.passwordMismatchMessage'),
+      );
     }
     if (role === 'citizen') {
       handleFinalRegister();
@@ -58,84 +82,200 @@ const RegisterScreen: React.FC<Props> = ({ navigation, route }) => {
     }
   };
 
-  const handleFinalRegister = () => {
-    const userData = {
-      role, fullname, email, phone, password, photo, city, state, country,
-      ...(role !== 'citizen' && {
-        designation, organizationName, employeeId, idProofUri, authorizationLetterUri,
-      }),
-    };
-    console.log('Registering user:', userData);
-    Alert.alert(t('register.alert.successTitle'), t('register.alert.successMessage', { fullname: fullname, role: t(`roles.${role}.title`) }));
-    navigation.navigate('Login');
+  const handleFinalRegister = async () => {
+    setLoading(true);
+
+    try {
+      // 1) Prepare the form data for a multi-part request
+      const formData = new FormData();
+      formData.append('name', fullname);
+      formData.append('email', email);
+      formData.append('phone', phone);
+      formData.append('password', password);
+      formData.append('city', city);
+      formData.append('state', stateText);
+      formData.append('country', country);
+      formData.append('role', role);
+
+      // Append photo file
+      if (photo) {
+        // We'll need to extract the filename from the URI
+        const filename = photo.split('/').pop();
+        formData.append('profilePhoto', {
+          uri: photo,
+          name: filename,
+          type: 'image/jpeg',
+        } as any); // Type assertion is needed for RN file objects
+      }
+
+      // Append role-specific data for Officials/Analysts
+      if (role !== 'citizen') {
+        formData.append('designation', designation);
+        formData.append('organizationName', organizationName);
+        formData.append('employeeId', employeeId);
+
+        if (idProofUri) {
+          const filename = idProofUri.split('/').pop();
+          formData.append('idProofDocument', {
+            uri: idProofUri,
+            name: filename,
+            type: 'application/pdf',
+          } as any);
+        }
+
+        if (authorizationLetterUri) {
+          const filename = authorizationLetterUri.split('/').pop();
+          formData.append('authorizationLetter', {
+            uri: authorizationLetterUri,
+            name: filename,
+            type: 'application/pdf',
+          } as any);
+        }
+      }
+
+      // 2) Send the entire form data to your API for a single registration request
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const response = await apiClient.post('/register', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      // 3) Handle success response
+      Alert.alert(
+        t('register.alert.successTitle'),
+        t('register.alert.successMessage', {
+          fullname,
+          role: t(`roles.${role}.title`),
+        }),
+      );
+      
+      // Navigate to login after successful registration
+      navigation.navigate('Login');
+
+    } catch (err: any) {
+      const message =
+        err.response?.data?.message || t('register.alert.errorDefault');
+      Alert.alert(t('register.alert.errorTitle'), message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const roleTitleKey = `roles.${role}.title`;
-  const headerSubtitle = t('register.header.subtitle', { role: t(roleTitleKey) });
+  const headerSubtitle = t('register.header.subtitle', {
+    role: t(`roles.${role}.title`),
+  });
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+    >
       <AppHeader title={t('register.header.title')} subtitle={headerSubtitle} />
       <View style={styles.content}>
         {step === 1 && (
           <>
-            <TouchableOpacity style={styles.photoUploadContainer} onPress={handlePhotoPick}>
-              <View style={styles.photoCircle}>
-                {photo
-                  ? <Image source={{ uri: photo }} style={styles.photoImg} />
-                  : <Icon name="camera" size={40} color="#a0a0a0" />}
-              </View>
-              <View style={styles.uploadIconContainer}>
-                <Icon name="upload" size={20} color="#138D35" />
-              </View>
-            </TouchableOpacity>
-            <Text style={styles.uploadPhotoText}>{t('register.photoUpload.label')}</Text>
-            <Text style={styles.requiredText}>{t('register.photoUpload.required')}</Text>
+            <View style={styles.photoUploadContainer}>
+              <TouchableOpacity onPress={handlePhotoPick}>
+                <View style={styles.photoCircle}>
+                  {photo ? (
+                    <Image source={{ uri: photo }} style={styles.photoImg} />
+                  ) : (
+                    <Icon name="account-circle-outline" size={70} color="#999" />
+                  )}
+                </View>
+                <View style={styles.uploadIconContainer}>
+                  <Icon name="camera-plus" size={20} color="#138D35" />
+                </View>
+              </TouchableOpacity>
+              <Text style={styles.uploadPhotoText}>
+                {t('register.uploadPhoto')}
+              </Text>
+              <Text style={styles.requiredText}>
+                ({t('register.required')})
+              </Text>
+            </View>
 
-            <Text style={styles.inputLabel}>{t('register.fullNameLabel')} *</Text>
+            <Text style={styles.inputLabel}>{t('register.fullName')}</Text>
             <TextInput
               style={styles.input}
               placeholder={t('register.fullNamePlaceholder')}
               value={fullname}
               onChangeText={setFullname}
+              autoCapitalize="words"
             />
-
-            <Text style={styles.inputLabel}>{t('register.emailLabel')} *</Text>
+            <Text style={styles.inputLabel}>{t('register.email')}</Text>
             <TextInput
               style={styles.input}
               placeholder={t('register.emailPlaceholder')}
               value={email}
-              autoCapitalize='none'
-              keyboardType='email-address'
               onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
             />
-
-            <Text style={styles.inputLabel}>{t('register.phoneLabel')} *</Text>
+            <Text style={styles.inputLabel}>{t('register.phone')}</Text>
             <TextInput
               style={styles.input}
               placeholder={t('register.phonePlaceholder')}
               value={phone}
-              keyboardType='phone-pad'
               onChangeText={setPhone}
+              keyboardType="phone-pad"
             />
-            
-            <Text style={styles.inputLabel}>{t('register.cityLabel')} *</Text>
+            <Text style={styles.inputLabel}>{t('register.password')}</Text>
+            <View style={styles.passwordInputContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder={t('register.passwordPlaceholder')}
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.passwordToggle}
+              >
+                <Icon
+                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={24}
+                  color="#999"
+                />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.inputLabel}>{t('register.confirmPassword')}</Text>
+            <View style={styles.passwordInputContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder={t('register.confirmPasswordPlaceholder')}
+                secureTextEntry={!showConfirm}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+              />
+              <TouchableOpacity
+                onPress={() => setShowConfirm(!showConfirm)}
+                style={styles.passwordToggle}
+              >
+                <Icon
+                  name={showConfirm ? 'eye-off-outline' : 'eye-outline'}
+                  size={24}
+                  color="#999"
+                />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.inputLabel}>{t('register.city')}</Text>
             <TextInput
               style={styles.input}
               placeholder={t('register.cityPlaceholder')}
               value={city}
               onChangeText={setCity}
             />
-
-            <Text style={styles.inputLabel}>{t('register.stateLabel')} *</Text>
+            <Text style={styles.inputLabel}>{t('register.state')}</Text>
             <TextInput
               style={styles.input}
               placeholder={t('register.statePlaceholder')}
-              value={state}
-              onChangeText={setState}
+              value={stateText}
+              onChangeText={setStateText}
             />
-            
-            <Text style={styles.inputLabel}>{t('register.countryLabel')} *</Text>
+            <Text style={styles.inputLabel}>{t('register.country')}</Text>
             <TextInput
               style={styles.input}
               placeholder={t('register.countryPlaceholder')}
@@ -143,41 +283,25 @@ const RegisterScreen: React.FC<Props> = ({ navigation, route }) => {
               onChangeText={setCountry}
             />
 
-            <Text style={styles.inputLabel}>{t('register.passwordLabel')} *</Text>
-            <View style={styles.passwordInputContainer}>
-              <TextInput
-                style={styles.passwordInput}
-                placeholder={t('register.passwordPlaceholder')}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-              />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.passwordToggle}>
-                <Icon name={showPassword ? "eye-off" : "eye"} size={24} color="#777" />
-              </TouchableOpacity>
-            </View>
-
-            <Text style={styles.inputLabel}>{t('register.confirmPasswordLabel')} *</Text>
-            <View style={styles.passwordInputContainer}>
-              <TextInput
-                style={styles.passwordInput}
-                placeholder={t('register.confirmPasswordPlaceholder')}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry={!showConfirmPassword}
-              />
-              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.passwordToggle}>
-                <Icon name={showConfirmPassword ? "eye-off" : "eye"} size={24} color="#777" />
-              </TouchableOpacity>
-            </View>
-            
-            <TouchableOpacity style={styles.mainButton} onPress={handleNextStep}>
-              <Text style={styles.mainButtonText}>{role === 'citizen' ? t('register.registerButton') : t('register.nextButton')}</Text>
+            <TouchableOpacity
+              style={styles.mainButton}
+              onPress={handleNextStep}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.mainButtonText}>
+                  {role === 'citizen'
+                    ? t('register.registerButton')
+                    : t('register.nextButton')}
+                </Text>
+              )}
             </TouchableOpacity>
           </>
         )}
 
-        {step === 2 && (role !== 'citizen') && (
+        {step === 2 && role !== 'citizen' && (
           <>
             <RoleSpecificFields
               role={role as 'official' | 'analyst'}
@@ -192,19 +316,38 @@ const RegisterScreen: React.FC<Props> = ({ navigation, route }) => {
               authorizationLetterUri={authorizationLetterUri}
               setAuthorizationLetterUri={setAuthorizationLetterUri}
             />
-            <TouchableOpacity style={styles.mainButton} onPress={handleFinalRegister}>
-              <Text style={styles.mainButtonText}>{t('register.registerButton')}</Text>
+
+            <TouchableOpacity
+              style={styles.mainButton}
+              onPress={handleFinalRegister}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.mainButtonText}>
+                  {t('register.registerButton')}
+                </Text>
+              )}
             </TouchableOpacity>
           </>
         )}
 
+        {/* OAuth & Switch To Login */}
         <TouchableOpacity style={styles.oauthButton}>
-          <Icon name="google" size={20} color="#DA4831" style={styles.oauthIcon} />
+          <Icon
+            name="google"
+            size={20}
+            color="#DA4831"
+            style={styles.oauthIcon}
+          />
           <Text style={styles.oauthText}>{t('register.googleButton')}</Text>
         </TouchableOpacity>
 
         <View style={styles.switchRow}>
-          <Text style={styles.switchText}>{t('register.haveAccountText')} </Text>
+          <Text style={styles.switchText}>
+            {t('register.haveAccountText')}{' '}
+          </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Login')}>
             <Text style={styles.switchLink}>{t('register.loginLink')}</Text>
           </TouchableOpacity>
@@ -213,7 +356,6 @@ const RegisterScreen: React.FC<Props> = ({ navigation, route }) => {
     </ScrollView>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -306,28 +448,28 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   mainButton: {
-    width: "100%",
+    width: '100%',
     padding: 15,
-    backgroundColor: "#138D35",
+    backgroundColor: '#138D35',
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: 'center',
     marginTop: 20,
     marginBottom: 15,
   },
   mainButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
     fontSize: 18,
   },
   oauthButton: {
     flexDirection: 'row',
-    width: "100%",
+    width: '100%',
     padding: 12,
     borderRadius: 8,
-    borderColor: "#e0e0e0",
+    borderColor: '#e0e0e0',
     borderWidth: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
+    backgroundColor: '#fff',
+    alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
   },
@@ -335,8 +477,8 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   oauthText: {
-    color: "#DA4831",
-    fontWeight: "700",
+    color: '#DA4831',
+    fontWeight: '700',
     fontSize: 16,
   },
   switchRow: {

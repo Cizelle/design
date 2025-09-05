@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert
+  View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../App';
@@ -8,45 +8,80 @@ import AppHeader from '../../components/AppHeader';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTranslation } from 'react-i18next';
 import { Picker } from '@react-native-picker/picker';
+// FIX: Use your custom API client instead of Supabase
+import apiClient from '../../api/client';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const { t, i18n } = useTranslation();
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState(''); // FIX: Changed username state to email for API
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const changeLanguage = (language: string) => {
     i18n.changeLanguage(language);
     setSelectedLanguage(language);
   };
 
-  const handleLogin = () => {
-    if (username.trim() === '') {
-      Alert.alert(t('login.alert.failedTitle'), t('login.alert.failedMessage'));
+  const handleLogin = async () => {
+    // FIX: Replaced 'identifier' with 'email'
+    if (email.trim() === '' || password.trim() === '') {
+      Alert.alert(t('login.alert.failedTitle'), t('login.alert.emptyFields'));
       return;
     }
-    // FIX: Pass username to MainTabs as a parameter
-    navigation.navigate('MainTabs', { username: username });
+
+    setIsLoading(true);
+
+    try {
+      const response = await apiClient.post('/auth/login', {
+        // FIX: Replaced 'identifier' with 'email' here as well
+        identifier: email,
+        password,
+      });
+      console.log('login response.data:', response.data);
+
+      const { user, tokens } = response.data;
+
+      // Persist user object
+      if (user) {
+        await AsyncStorage.setItem('userData', JSON.stringify(user));
+      }
+
+      // Persist JWT securely
+      if (tokens?.access?.token) {
+        await AsyncStorage.setItem('authToken', tokens.access.token);
+      }
+
+      // Navigate to main app
+      navigation.replace('MainTabs', { user });
+    } catch (err: any) {
+      console.warn('Login error', err?.response ?? err);
+      const errorMessage =
+        err.response?.data?.message ?? 'An unexpected error occurred.';
+      Alert.alert(t('login.alert.failedTitle'), errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <AppHeader title={t('login.header.title')} subtitle={t('login.header.subtitle')} />
-      
       <Text style={styles.welcomeText}>{t('login.welcome')}</Text>
-
       <View style={styles.content}>
         <Text style={styles.inputLabel}>{t('login.usernameLabel')} *</Text>
         <TextInput
           style={styles.input}
           placeholder={t('login.usernamePlaceholder')}
-          value={username}
-          onChangeText={setUsername}
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
         />
-
         <Text style={styles.inputLabel}>{t('login.passwordLabel')} *</Text>
         <View style={styles.passwordInputContainer}>
           <TextInput
@@ -60,25 +95,24 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <Icon name={showPassword ? "eye-off" : "eye"} size={24} color="#777" />
           </TouchableOpacity>
         </View>
-
         <TouchableOpacity style={styles.forgotPasswordButton}>
           <Text style={styles.forgotPasswordText}>{t('login.forgotPassword')}</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity style={styles.mainButton} onPress={handleLogin}>
-          <Text style={styles.mainButtonText}>{t('login.mainButton')}</Text>
+        <TouchableOpacity style={styles.mainButton} onPress={handleLogin} disabled={isLoading}>
+          {isLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.mainButtonText}>{t('login.mainButton')}</Text>
+          )}
         </TouchableOpacity>
-
         <TouchableOpacity style={styles.oauthButton}>
           <Icon name="google" size={20} color="#DA4831" style={styles.oauthIcon} />
           <Text style={styles.oauthText}>{t('login.googleButton')}</Text>
         </TouchableOpacity>
-
         <TouchableOpacity style={styles.otpButton}>
           <Icon name="message-text" size={20} color="#FFBF00" style={styles.oauthIcon} />
           <Text style={styles.otpText}>{t('login.otpButton')}</Text>
         </TouchableOpacity>
-
         <View style={styles.switchRow}>
           <Text style={styles.switchText}>{t('login.noAccountText')} </Text>
           <TouchableOpacity onPress={() => navigation.navigate('ChooseRole')}>
@@ -86,8 +120,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
-      
-      {/* LANGUAGE PICKER MOVED TO THE END */}
       <View style={[styles.languagePickerContainer, styles.languagePickerBottom]}>
         <Text style={styles.languageLabel}>{t('settings.language.changeLanguage')}:</Text>
         <View style={styles.pickerWrapper}>
@@ -111,7 +143,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingBottom: 20,
   },
-  // Keep the original styles for centering and width
   languagePickerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -120,10 +151,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 20,
   },
-  // Add a specific style to place it at the bottom, if needed
   languagePickerBottom: {
-    marginTop: 'auto', // Pushes it to the bottom of the container
-    marginBottom: 20, // Add some space from the bottom
+    marginTop: 'auto',
+    marginBottom: 20,
   },
   languageLabel: {
     fontSize: 16,
