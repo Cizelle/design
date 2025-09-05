@@ -2,22 +2,24 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 
 const ProfileConfirmationScreen = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
 
   return (
     <View style={styles.container}>
       <Icon name="check-circle-outline" size={100} color="#138D35" />
-      <Text style={styles.confirmationTitle}>Information Saved!</Text>
+      <Text style={styles.confirmationTitle}>{t('profileConfirmation.title')}</Text>
       <Text style={styles.confirmationMessage}>
-        Your personal and medical details have been successfully updated.
+        {t('profileConfirmation.message')}
       </Text>
       <TouchableOpacity
         style={styles.mainButton}
         onPress={() => navigation.navigate('ProfileHome')}
       >
-        <Text style={styles.mainButtonText}>Go to Profile</Text>
+        <Text style={styles.mainButtonText}>{t('profileConfirmation.button')}</Text>
       </TouchableOpacity>
     </View>
   );

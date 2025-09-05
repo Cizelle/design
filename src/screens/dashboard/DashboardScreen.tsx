@@ -5,48 +5,49 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
-import { DashboardStackParamList } from '../../navigation/MainTabNavigator'; // Import the new type
+import { DashboardStackParamList } from '../../navigation/MainTabNavigator';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 
 // Correctly define the props for this screen within the nested stack
 type Props = NativeStackScreenProps<DashboardStackParamList, 'DashboardHome'>;
 
 const DashboardScreen: React.FC<Props> = ({ route }) => {
+  const { t } = useTranslation();
   const { username } = route.params;
-  const navigation = useNavigation<any>(); // We use `any` for simplicity in navigation actions
+  const navigation = useNavigation<any>();
 
   return (
     <ScrollView style={styles.container}>
       {/* Top Header */}
       <View style={styles.header}>
-  {/* Hamburger Menu Icon */}
-  <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuIconContainer}>
-    <Icon name="menu" size={30} color="#333" />
-  </TouchableOpacity>
-  
-  <View style={styles.appInfo}>
-    <Icon name="waves" size={30} color="#138D35" />
-    <View style={styles.appNameContainer}>
-      <Text style={styles.appName}>Sahayak</Text>
-      <Text style={styles.appTagline}>Disaster Management</Text>
-    </View>
-  </View>
-  <TouchableOpacity style={styles.profileIconContainer}>
-    <Icon name="account-circle" size={40} color="#138D35" />
-  </TouchableOpacity>
-</View>
+        <TouchableOpacity onPress={() => navigation.openDrawer()} style={styles.menuIconContainer}>
+          <Icon name="menu" size={30} color="#333" />
+        </TouchableOpacity>
+        
+        <View style={styles.appInfo}>
+          <Icon name="waves" size={30} color="#138D35" />
+          <View style={styles.appNameContainer}>
+            <Text style={styles.appName}>{t('dashboard.header.appName')}</Text>
+            <Text style={styles.appTagline}>{t('dashboard.header.tagline')}</Text>
+          </View>
+        </View>
+        <TouchableOpacity style={styles.profileIconContainer}>
+          <Icon name="account-circle" size={40} color="#138D35" />
+        </TouchableOpacity>
+      </View>
 
       {/* Welcome Banner */}
       <View style={styles.welcomeBanner}>
-        <Text style={styles.welcomeText}>Namaste, {username}</Text>
+        <Text style={styles.welcomeText}>{t('dashboard.welcome.greeting', { username })}</Text>
         <Text style={styles.staySafeText}>
-          Stay safe and help your community by reporting hazards
+          {t('dashboard.welcome.subtitle')}
         </Text>
         <View style={styles.statusContainer}>
           <View style={styles.statusBox}>
-            <Text style={styles.statusLabel}>Status: Active</Text>
+            <Text style={styles.statusLabel}>{t('dashboard.status.label')}</Text>
           </View>
-          <Text style={styles.reportsCount}>12 Reports this month</Text>
+          <Text style={styles.reportsCount}>{t('dashboard.status.reportsCount', { count: 12 })}</Text>
         </View>
       </View>
 
@@ -59,8 +60,8 @@ const DashboardScreen: React.FC<Props> = ({ route }) => {
           <View style={styles.cardIcon}>
             <Icon name="alert-circle-outline" size={40} color="#D45348" />
           </View>
-          <Text style={styles.cardTitle}>Report Hazard</Text>
-          <Text style={styles.cardSubtitle}>Submit new report</Text>
+          <Text style={styles.cardTitle}>{t('dashboard.actions.reportHazard.title')}</Text>
+          <Text style={styles.cardSubtitle}>{t('dashboard.actions.reportHazard.subtitle')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.card}
@@ -69,28 +70,27 @@ const DashboardScreen: React.FC<Props> = ({ route }) => {
           <View style={styles.cardIcon}>
             <Icon name="heart-outline" size={40} color="#138D35" />
           </View>
-          <Text style={styles.cardTitle}>Donate</Text>
-          <Text style={styles.cardSubtitle}>Help victims</Text>
+          <Text style={styles.cardTitle}>{t('dashboard.actions.donate.title')}</Text>
+          <Text style={styles.cardSubtitle}>{t('dashboard.actions.donate.subtitle')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.card}>
           <View style={styles.cardIcon}>
             <Icon name="account-group-outline" size={40} color="#1565C0" />
           </View>
-          <Text style={styles.cardTitle}>Track Family</Text>
-          <Text style={styles.cardSubtitle}>Find loved ones</Text>
+          <Text style={styles.cardTitle}>{t('dashboard.actions.trackFamily.title')}</Text>
+          <Text style={styles.cardSubtitle}>{t('dashboard.actions.trackFamily.subtitle')}</Text>
         </TouchableOpacity>
 
-        
-<TouchableOpacity
-  style={styles.card}
-  onPress={() => navigation.navigate('Offline')} // This is the change
->
-  <View style={styles.cardIcon}>
-    <Icon name="power-plug-off" size={40} color="#FF9800" />
-  </View>
-  <Text style={styles.cardTitle}>Offline Mode</Text>
-  <Text style={styles.cardSubtitle}>Emergency backup</Text>
-</TouchableOpacity>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => navigation.navigate('Offline')}
+        >
+          <View style={styles.cardIcon}>
+            <Icon name="power-plug-off" size={40} color="#FF9800" />
+          </View>
+          <Text style={styles.cardTitle}>{t('dashboard.actions.offlineMode.title')}</Text>
+          <Text style={styles.cardSubtitle}>{t('dashboard.actions.offlineMode.subtitle')}</Text>
+        </TouchableOpacity>
 
       </View>
 
@@ -98,21 +98,21 @@ const DashboardScreen: React.FC<Props> = ({ route }) => {
       <View style={styles.nearbyContainer}>
         <View style={styles.nearbyHeader}>
           <Icon name="map-marker-outline" size={24} color="#138D35" />
-          <Text style={styles.nearbyTitle}>Nearby Activity</Text>
+          <Text style={styles.nearbyTitle}>{t('dashboard.nearby.title')}</Text>
         </View>
         <View style={styles.mapPlaceholder}>
           <Icon name="map" size={50} color="#ccc" />
-          <Text style={styles.mapText}>Interactive Map</Text>
+          <Text style={styles.mapText}>{t('dashboard.nearby.mapText')}</Text>
         </View>
         <View style={styles.activityList}>
           <View style={styles.activityItem}>
             <View style={[styles.dot, { backgroundColor: '#FF0000' }]} />
-            <Text style={styles.activityText}>High Wave Warning</Text>
+            <Text style={styles.activityText}>{t('dashboard.nearby.waveWarning')}</Text>
             <Text style={styles.distanceText}>1.2 km</Text>
           </View>
           <View style={styles.activityItem}>
             <View style={[styles.dot, { backgroundColor: '#138D35' }]} />
-            <Text style={styles.activityText}>Shelter Available</Text>
+            <Text style={styles.activityText}>{t('dashboard.nearby.shelterAvailable')}</Text>
             <Text style={styles.distanceText}>0.8 km</Text>
           </View>
         </View>
@@ -123,35 +123,35 @@ const DashboardScreen: React.FC<Props> = ({ route }) => {
         <View style={styles.reportsHeader}>
           <View style={styles.reportsHeaderTitle}>
             <Icon name="history" size={24} color="#138D35" />
-            <Text style={styles.reportsTitle}>My Recent Reports</Text>
+            <Text style={styles.reportsTitle}>{t('dashboard.reports.title')}</Text>
           </View>
           <TouchableOpacity style={styles.newReportButton}>
             <Icon name="plus" size={16} color="#138D35" />
-            <Text style={styles.newReportText}>New</Text>
+            <Text style={styles.newReportText}>{t('dashboard.reports.newButton')}</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.reportItem}>
           <Icon name="alert-triangle" size={24} color="#1565C0" />
           <View style={styles.reportItemTextContainer}>
-            <Text style={styles.reportItemTitle}>High Waves</Text>
-            <Text style={styles.reportItemSubtitle}>Marina Beach</Text>
+            <Text style={styles.reportItemTitle}>{t('dashboard.reports.item1.title')}</Text>
+            <Text style={styles.reportItemSubtitle}>{t('dashboard.reports.item1.subtitle')}</Text>
           </View>
           <View style={[styles.reportStatus, { backgroundColor: '#D4EDDA' }]}>
-            <Text style={[styles.reportStatusText, { color: '#138D35' }]}>Verified</Text>
+            <Text style={[styles.reportStatusText, { color: '#138D35' }]}>{t('dashboard.reports.statusVerified')}</Text>
           </View>
         </View>
         <View style={styles.reportItem}>
           <Icon name="alert-triangle" size={24} color="#1565C0" />
           <View style={styles.reportItemTextContainer}>
-            <Text style={styles.reportItemTitle}>Flooding</Text>
-            <Text style={styles.reportItemSubtitle}>ECR Road</Text>
+            <Text style={styles.reportItemTitle}>{t('dashboard.reports.item2.title')}</Text>
+            <Text style={styles.reportItemSubtitle}>{t('dashboard.reports.item2.subtitle')}</Text>
           </View>
           <View style={[styles.reportStatus, { backgroundColor: '#FFF3CD' }]}>
-            <Text style={[styles.reportStatusText, { color: '#FFC107' }]}>Pending</Text>
+            <Text style={[styles.reportStatusText, { color: '#FFC107' }]}>{t('dashboard.reports.statusPending')}</Text>
           </View>
         </View>
         <TouchableOpacity style={styles.viewAllReports}>
-          <Text style={styles.viewAllReportsText}>View All Reports</Text>
+          <Text style={styles.viewAllReportsText}>{t('dashboard.reports.viewAllButton')}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
   },
   menuIconContainer: {
     paddingRight: 15,
-},
+  },
 });
 
 export default DashboardScreen;

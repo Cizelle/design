@@ -1,52 +1,92 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert
+  View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../App';
 import AppHeader from '../../components/AppHeader';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
+import { Picker } from '@react-native-picker/picker';
+// FIX: Use your custom API client instead of Supabase
+import apiClient from '../../api/client';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
-  const [username, setUsername] = useState('');
+  const { t, i18n } = useTranslation();
+  const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
+  const [email, setEmail] = useState(''); // FIX: Changed username state to email for API
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // New function to handle login logic and navigation
-  const handleLogin = () => {
-    // For now, we'll just check if a username is entered.
-    // In a real app, this is where you'd call your authentication API.
-    if (username.trim() === '') {
-      Alert.alert('Login Failed', 'Please enter a username to continue.');
+  const changeLanguage = (language: string) => {
+    i18n.changeLanguage(language);
+    setSelectedLanguage(language);
+  };
+
+  const handleLogin = async () => {
+    // FIX: Replaced 'identifier' with 'email'
+    if (email.trim() === '' || password.trim() === '') {
+      Alert.alert(t('login.alert.failedTitle'), t('login.alert.emptyFields'));
       return;
     }
 
-    // Navigate to the MainTabs navigator and pass the username
-    navigation.navigate('MainTabs', { username: username });
+    setIsLoading(true);
+
+    try {
+      const response = await apiClient.post('/auth/login', {
+        // FIX: Replaced 'identifier' with 'email' here as well
+        identifier: email,
+        password,
+      });
+      console.log('login response.data:', response.data);
+
+      const { user, tokens } = response.data;
+
+      // Persist user object
+      if (user) {
+        await AsyncStorage.setItem('userData', JSON.stringify(user));
+      }
+
+      // Persist JWT securely
+      if (tokens?.access?.token) {
+        await AsyncStorage.setItem('authToken', tokens.access.token);
+      }
+
+      // Navigate to main app
+      navigation.replace('MainTabs', { user });
+    } catch (err: any) {
+      console.warn('Login error', err?.response ?? err);
+      const errorMessage =
+        err.response?.data?.message ?? 'An unexpected error occurred.';
+      Alert.alert(t('login.alert.failedTitle'), errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      <AppHeader title="Login" subtitle="Welcome back to Disaster Manager" />
-      
-      <Text style={styles.welcomeText}>Welcome to Sahayak</Text>
-
+      <AppHeader title={t('login.header.title')} subtitle={t('login.header.subtitle')} />
+      <Text style={styles.welcomeText}>{t('login.welcome')}</Text>
       <View style={styles.content}>
-        <Text style={styles.inputLabel}>Username *</Text>
+        <Text style={styles.inputLabel}>{t('login.usernameLabel')} *</Text>
         <TextInput
           style={styles.input}
-          placeholder="Enter your username"
-          value={username}
-          onChangeText={setUsername}
+          placeholder={t('login.usernamePlaceholder')}
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
         />
-
-        <Text style={styles.inputLabel}>Password *</Text>
+        <Text style={styles.inputLabel}>{t('login.passwordLabel')} *</Text>
         <View style={styles.passwordInputContainer}>
           <TextInput
             style={styles.passwordInput}
-            placeholder="Enter your password"
+            placeholder={t('login.passwordPlaceholder')}
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
@@ -55,31 +95,42 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <Icon name={showPassword ? "eye-off" : "eye"} size={24} color="#777" />
           </TouchableOpacity>
         </View>
-
         <TouchableOpacity style={styles.forgotPasswordButton}>
-          <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+          <Text style={styles.forgotPasswordText}>{t('login.forgotPassword')}</Text>
         </TouchableOpacity>
-
-        {/* Updated onPress to call the new handleLogin function */}
-        <TouchableOpacity style={styles.mainButton} onPress={handleLogin}>
-          <Text style={styles.mainButtonText}>Login</Text>
+        <TouchableOpacity style={styles.mainButton} onPress={handleLogin} disabled={isLoading}>
+          {isLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.mainButtonText}>{t('login.mainButton')}</Text>
+          )}
         </TouchableOpacity>
-
         <TouchableOpacity style={styles.oauthButton}>
           <Icon name="google" size={20} color="#DA4831" style={styles.oauthIcon} />
-          <Text style={styles.oauthText}>Login with Google</Text>
+          <Text style={styles.oauthText}>{t('login.googleButton')}</Text>
         </TouchableOpacity>
-
         <TouchableOpacity style={styles.otpButton}>
           <Icon name="message-text" size={20} color="#FFBF00" style={styles.oauthIcon} />
-          <Text style={styles.otpText}>Login with OTP</Text>
+          <Text style={styles.otpText}>{t('login.otpButton')}</Text>
         </TouchableOpacity>
-
         <View style={styles.switchRow}>
-          <Text style={styles.switchText}>Don’t have an account? </Text>
+          <Text style={styles.switchText}>{t('login.noAccountText')} </Text>
           <TouchableOpacity onPress={() => navigation.navigate('ChooseRole')}>
-            <Text style={styles.switchLink}>Register</Text>
+            <Text style={styles.switchLink}>{t('login.registerLink')}</Text>
           </TouchableOpacity>
+        </View>
+      </View>
+      <View style={[styles.languagePickerContainer, styles.languagePickerBottom]}>
+        <Text style={styles.languageLabel}>{t('settings.language.changeLanguage')}:</Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={selectedLanguage}
+            onValueChange={(itemValue) => changeLanguage(itemValue)}
+            style={styles.picker}
+          >
+            <Picker.Item label={t('languages.english')} value="en" />
+            <Picker.Item label={t('languages.hindi')} value="hi" />
+          </Picker>
         </View>
       </View>
     </ScrollView>
@@ -91,6 +142,35 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     backgroundColor: '#fff',
     paddingBottom: 20,
+  },
+  languagePickerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '90%',
+    alignSelf: 'center',
+    marginTop: 20,
+  },
+  languagePickerBottom: {
+    marginTop: 'auto',
+    marginBottom: 20,
+  },
+  languageLabel: {
+    fontSize: 16,
+    color: '#666',
+    marginRight: 10,
+  },
+  pickerWrapper: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  picker: {
+    width: '100%',
+    height: 40,
+    color: '#333',
   },
   welcomeText: {
     fontSize: 28,

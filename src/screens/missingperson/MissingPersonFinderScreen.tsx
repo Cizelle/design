@@ -1,15 +1,17 @@
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const MissingPersonFinderScreen = ({ }) => {
+  const { t } = useTranslation();
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Missing Person Finder</Text>
+        <Text style={styles.headerTitle}>{t('missingPerson.headerTitle')}</Text>
         <Text style={styles.headerSubtitle}>
-          Help reunite families by reporting a missing person or a found individual.
+          {t('missingPerson.headerSubtitle')}
         </Text>
       </View>
 
@@ -24,9 +26,9 @@ const MissingPersonFinderScreen = ({ }) => {
           }}
         >
           <Icon name="account-search-outline" size={60} color="#e74c3c" style={styles.icon} />
-          <Text style={styles.optionTitle}>Report Missing</Text>
+          <Text style={styles.optionTitle}>{t('missingPerson.reportMissing.title')}</Text>
           <Text style={styles.optionDescription}>
-            Create a detailed report for a person who is missing.
+            {t('missingPerson.reportMissing.description')}
           </Text>
         </TouchableOpacity>
 
@@ -40,9 +42,9 @@ const MissingPersonFinderScreen = ({ }) => {
           }}
         >
           <Icon name="check-decagram-outline" size={60} color="#27ae60" style={styles.icon} />
-          <Text style={styles.optionTitle}>Found Someone</Text>
+          <Text style={styles.optionTitle}>{t('missingPerson.foundSomeone.title')}</Text>
           <Text style={styles.optionDescription}>
-            Provide information about someone you have found.
+            {t('missingPerson.foundSomeone.description')}
           </Text>
         </TouchableOpacity>
       </View>

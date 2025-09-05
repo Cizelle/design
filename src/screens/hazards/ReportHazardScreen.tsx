@@ -1,106 +1,172 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView, Image,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+  Image,
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { useTranslation } from 'react-i18next';
+import apiClient from '../../api/client';
 
-const eventTypes = ['Tsunami', 'High Wave', 'Flooding', 'Storm Surge', 'SOS', 'Other'];
-const reportCategories = ['Observation', 'SOS'];
-
-const ReportHazardScreen = () => {
+const ReportHazardScreen: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
+
   const [eventType, setEventType] = useState('');
   const [reportCategory, setReportCategory] = useState('Observation');
   const [description, setDescription] = useState('');
   const [locationDescription, setLocationDescription] = useState('');
-  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [coords, setCoords] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
-  const [mediaFiles, setMediaFiles] = useState<any[]>([]); // New state for media files
+  const [mediaFiles, setMediaFiles] = useState<
+    { uri: string; fileName?: string; type: 'Image' | 'Video' }[]
+  >([]);
+  const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchUserLocation();
-  }, []);
+  const eventTypes = [
+    t('report.eventTypes.tsunami'),
+    t('report.eventTypes.highWave'),
+    t('report.eventTypes.flooding'),
+    t('report.eventTypes.stormSurge'),
+    t('report.eventTypes.sos'),
+    t('report.eventTypes.other'),
+  ];
+  const reportCategories = [
+    t('report.categories.observation'),
+    t('report.categories.sos'),
+  ];
 
-  const fetchUserLocation = () => {
+  const fetchUserLocation = useCallback(() => {
     setLoadingLocation(true);
     Geolocation.getCurrentPosition(
-      (position) => {
+      position => {
         setCoords({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         });
         setLoadingLocation(false);
       },
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      (error) => {
-        Alert.alert('Location Error', 'Failed to get your location. Please check your permissions.');
+      () => {
+        Alert.alert(
+          t('report.alert.locationErrorTitle'),
+          t('report.alert.locationErrorMessage'),
+        );
         setLoadingLocation(false);
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
     );
-  };
+  }, [t]);
 
-  const handleMediaUpload = (type: 'photo' | 'video') => {
-    launchImageLibrary({
-      mediaType: type,
-      quality: 1,
-      selectionLimit: 5, // Allow up to 5 files to be selected
-    }, (response) => {
-      if (response.didCancel) {
-        console.log('User cancelled image picker');
-      } else if (response.errorCode) {
-        console.log('ImagePicker Error: ', response.errorCode);
-      } else if (response.assets) {
-        const newFiles = response.assets.map(asset => ({
-          uri: asset.uri,
-          fileName: asset.fileName,
-          type: asset.type?.startsWith('photo') ? 'Image' : 'Video'
-        }));
-        setMediaFiles(prevFiles => [...prevFiles, ...newFiles]);
-      }
-    });
-  };
+  useEffect(() => {
+    fetchUserLocation();
+  }, [fetchUserLocation]);
 
-  const handleReport = () => {
+const handleMediaUpload = (type: 'photo' | 'video') => {
+    launchImageLibrary(
+        {
+            mediaType: type,
+            quality: 1,
+            selectionLimit: 5,
+        },
+        response => {
+            if (response.didCancel) {
+                return;
+            }
+            if (response.errorCode) {
+                console.log('Picker Error:', response.errorCode);
+                return;
+            }
+            if (response.assets) {
+
+                // Step 1: Filter out any assets that do not have a valid URI.
+                // This guarantees the 'uri' property exists for the next step.
+                const validAssets = response.assets.filter(asset => asset.uri !== null && asset.uri !== undefined);
+
+                // Step 2: Now, map the filtered, valid assets to the correct structure.
+                // The TypeScript compiler is now happy because it knows 'uri' is present.
+                const newFiles = validAssets.map(asset => ({
+                    uri: asset.uri!, // '!' is now safe because we've filtered
+                    fileName: asset.fileName,
+                    type: (asset.type?.startsWith('image') ? 'Image' : 'Video') as 'Image' | 'Video',
+                }));
+
+                setMediaFiles(prev => [...prev, ...newFiles]);
+            }
+        },
+    );
+};
+
+  const handleReport = async () => {
     if (!eventType || !description || !coords) {
-      Alert.alert('Incomplete Form', 'Please fill all required fields and ensure location is found.');
+      Alert.alert(
+        t('report.alert.incompleteFormTitle'),
+        t('report.alert.incompleteFormMessage'),
+      );
       return;
     }
-    // Logic to send data to your backend
-    const reportData = {
-      eventType,
-      reportCategory,
-      description,
-      locationDescription,
-      latitude: coords.latitude,
-      longitude: coords.longitude,
-      mediaFiles: mediaFiles.map(file => ({
-        type: file.type,
-        fileName: file.fileName,
-        uri: file.uri,
-      }))
-    };
-    console.log('Hazard Report Data:', reportData);
-    // Simulate API call
-    Alert.alert('Report Submitted!', 'Your hazard report has been submitted successfully.');
-    navigation.goBack(); // Navigate back to the Dashboard
+
+    setSubmitting(true);
+    try {
+      const form = new FormData();
+      form.append('event_type', eventType);
+      form.append('report_category', reportCategory);
+      form.append('description', description);
+      form.append('location_description', locationDescription);
+      form.append('latitude', coords.latitude.toString());
+      form.append('longitude', coords.longitude.toString());
+
+      mediaFiles.forEach((file, idx) => {
+        form.append('media', {
+          uri: file.uri,
+          type: file.type === 'Image' ? 'image/jpeg' : 'video/mp4',
+          name: file.fileName || `file-${idx}`,
+        } as any);
+      });
+
+      await apiClient.post('/reports', form);
+
+      Alert.alert(
+        t('report.alert.successTitle'),
+        t('report.alert.successMessage'),
+      );
+      navigation.goBack();
+    } catch (err: any) {
+      const message =
+        err.response?.data?.message || err.message || 'Submission failed';
+      Alert.alert(t('report.alert.errorTitle'), message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
           <Icon name="arrow-left" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Report Hazard</Text>
+        <Text style={styles.headerTitle}>{t('report.headerTitle')}</Text>
       </View>
+
       <View style={styles.content}>
-        <Text style={styles.inputLabel}>Event Type *</Text>
+        <Text style={styles.inputLabel}>{t('report.eventTypeLabel')} *</Text>
         <View style={styles.selectorContainer}>
-          {eventTypes.map((type) => (
+          {eventTypes.map(type => (
             <TouchableOpacity
               key={type}
               style={[
@@ -121,92 +187,108 @@ const ReportHazardScreen = () => {
           ))}
         </View>
 
-        <Text style={styles.inputLabel}>Report Category *</Text>
+        <Text style={styles.inputLabel}>{t('report.categoryLabel')} *</Text>
         <View style={styles.selectorContainer}>
-          {reportCategories.map((category) => (
+          {reportCategories.map(cat => (
             <TouchableOpacity
-              key={category}
+              key={cat}
               style={[
                 styles.selectorButton,
-                reportCategory === category && styles.selectorButtonActive,
+                reportCategory === cat && styles.selectorButtonActive,
               ]}
-              onPress={() => setReportCategory(category)}
+              onPress={() => setReportCategory(cat)}
             >
               <Text
                 style={[
                   styles.selectorButtonText,
-                  reportCategory === category && styles.selectorButtonTextActive,
+                  reportCategory === cat && styles.selectorButtonTextActive,
                 ]}
               >
-                {category}
+                {cat}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={styles.inputLabel}>Description *</Text>
+        <Text style={styles.inputLabel}>{t('report.descriptionLabel')} *</Text>
         <TextInput
           style={styles.descriptionInput}
-          placeholder="Describe the hazard"
+          placeholder={t('report.descriptionPlaceholder')}
           multiline
           value={description}
           onChangeText={setDescription}
         />
 
-        <Text style={styles.inputLabel}>Your Location *</Text>
+        <Text style={styles.inputLabel}>{t('report.locationLabel')} *</Text>
         <View style={styles.locationContainer}>
           {loadingLocation ? (
             <ActivityIndicator size="small" color="#138D35" />
           ) : coords ? (
             <Text style={styles.locationText}>
-              Lat: {coords.latitude.toFixed(4)}, Long: {coords.longitude.toFixed(4)}
+              Lat: {coords.latitude.toFixed(4)}, Long:{' '}
+              {coords.longitude.toFixed(4)}
             </Text>
           ) : (
-            <Text style={styles.locationText}>Location not available</Text>
+            <Text style={styles.locationText}>
+              {t('report.locationNotAvailable')}
+            </Text>
           )}
-          <TouchableOpacity onPress={fetchUserLocation} style={styles.refreshButton}>
+          <TouchableOpacity
+            onPress={fetchUserLocation}
+            style={styles.refreshButton}
+          >
             <Icon name="refresh" size={20} color="#138D35" />
-            <Text style={styles.refreshText}>Refresh</Text>
+            <Text style={styles.refreshText}>{t('report.refreshButton')}</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.inputLabel}>Location Description (Optional)</Text>
+
+        <Text style={styles.inputLabel}>
+          {t('report.locationDescriptionLabel')}
+        </Text>
         <TextInput
           style={styles.input}
-          placeholder="e.g. Near Marina Beach"
+          placeholder={t('report.locationDescriptionPlaceholder')}
           value={locationDescription}
           onChangeText={setLocationDescription}
         />
-        
-        {/* New Media Upload Section */}
-        <Text style={styles.inputLabel}>Upload Media (Optional)</Text>
+
+        <Text style={styles.inputLabel}>{t('report.mediaLabel')}</Text>
         <View style={styles.uploadButtonsContainer}>
           <TouchableOpacity
             style={styles.uploadButton}
             onPress={() => handleMediaUpload('photo')}
           >
             <Icon name="image-outline" size={24} color="#333" />
-            <Text style={styles.uploadButtonText}>Image</Text>
+            <Text style={styles.uploadButtonText}>
+              {t('report.uploadImageButton')}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.uploadButton}
             onPress={() => handleMediaUpload('video')}
           >
             <Icon name="video-outline" size={24} color="#333" />
-            <Text style={styles.uploadButtonText}>Video</Text>
+            <Text style={styles.uploadButtonText}>
+              {t('report.uploadVideoButton')}
+            </Text>
           </TouchableOpacity>
         </View>
-        
+
         {mediaFiles.length > 0 && (
           <View style={styles.mediaPreviewContainer}>
-            <Text style={styles.mediaPreviewTitle}>Selected Files:</Text>
-            {mediaFiles.map((file, index) => (
-              <View key={index} style={styles.mediaItem}>
+            <Text style={styles.mediaPreviewTitle}>
+              {t('report.selectedFilesTitle')}
+            </Text>
+            {mediaFiles.map((file, idx) => (
+              <View key={idx} style={styles.mediaItem}>
                 {file.type === 'Image' ? (
                   <Image source={{ uri: file.uri }} style={styles.mediaImage} />
                 ) : (
                   <View style={styles.videoPlaceholder}>
                     <Icon name="play-circle-outline" size={24} color="#fff" />
-                    <Text style={styles.videoPlaceholderText}>Video</Text>
+                    <Text style={styles.videoPlaceholderText}>
+                      {t('report.videoPlaceholder')}
+                    </Text>
                   </View>
                 )}
                 <Text style={styles.mediaFileName}>{file.fileName}</Text>
@@ -215,8 +297,18 @@ const ReportHazardScreen = () => {
           </View>
         )}
 
-        <TouchableOpacity style={styles.mainButton} onPress={handleReport}>
-          <Text style={styles.mainButtonText}>Submit Report</Text>
+        <TouchableOpacity
+          style={styles.mainButton}
+          onPress={handleReport}
+          disabled={submitting}
+        >
+          {submitting ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.mainButtonText}>
+              {t('report.submitButton')}
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -396,17 +488,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   mainButton: {
-    width: "100%",
+    width: '100%',
     padding: 15,
-    backgroundColor: "#138D35",
+    backgroundColor: '#138D35',
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: 'center',
     marginTop: 20,
     marginBottom: 15,
   },
   mainButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
     fontSize: 18,
   },
 });

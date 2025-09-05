@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 
 // 1. Define a TypeScript interface for the data structure
 interface ResourcePackage {
@@ -11,38 +12,41 @@ interface ResourcePackage {
   fileUrl: string;
 }
 
-const resourcePackages: ResourcePackage[] = [
-  {
-    id: '1',
-    title: 'Emergency Survival Guide',
-    description: 'A comprehensive guide on what to do before, during, and after a coastal disaster.',
-    icon: 'file-document-outline',
-    fileUrl: 'https://www.example.com/guide.pdf', // Replace with your actual file URL
-  },
-  {
-    id: '2',
-    title: 'First Aid Essentials Checklist',
-    description: 'A checklist of essential first-aid items for your emergency kit.',
-    icon: 'clipboard-list-outline',
-    fileUrl: 'https://www.example.com/checklist.pdf', // Replace with your actual file URL
-  },
-  {
-    id: '3',
-    title: 'Local Shelter Information',
-    description: 'A list of designated shelters and evacuation routes in your area.',
-    icon: 'map-marker-radius-outline',
-    fileUrl: 'https://www.example.com/shelter_info.pdf', // Replace with your actual file URL
-  },
-];
-
 const ResourcesScreen = () => {
+  const { t } = useTranslation();
+
+  // The data is now defined inside the component to use the t function
+  const resourcePackages: ResourcePackage[] = [
+    {
+      id: '1',
+      title: t('resources.packages.survivalGuide.title'),
+      description: t('resources.packages.survivalGuide.description'),
+      icon: 'file-document-outline',
+      fileUrl: 'https://www.example.com/guide.pdf', // Replace with your actual file URL
+    },
+    {
+      id: '2',
+      title: t('resources.packages.firstAid.title'),
+      description: t('resources.packages.firstAid.description'),
+      icon: 'clipboard-list-outline',
+      fileUrl: 'https://www.example.com/checklist.pdf', // Replace with your actual file URL
+    },
+    {
+      id: '3',
+      title: t('resources.packages.shelterInfo.title'),
+      description: t('resources.packages.shelterInfo.description'),
+      icon: 'map-marker-radius-outline',
+      fileUrl: 'https://www.example.com/shelter_info.pdf', // Replace with your actual file URL
+    },
+  ];
+
   const handleDownload = (fileUrl: string) => {
-    Alert.alert('Download Started', `Downloading: ${fileUrl}`);
+    Alert.alert(t('resources.alert.downloadTitle'), t('resources.alert.downloadMessage', { fileUrl }));
     console.log(`Simulating download for: ${fileUrl}`);
   };
 
   // 2. Add the type annotation to the renderItem function
-  //    This tells TypeScript that 'item' is of type 'ResourcePackage'
+  //    This tells TypeScript that 'item' is of type 'ResourcePackage'
   const renderItem = ({ item }: { item: ResourcePackage }) => (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -56,7 +60,7 @@ const ResourcesScreen = () => {
         onPress={() => handleDownload(item.fileUrl)}
       >
         <Icon name="download" size={20} color="#333" />
-        <Text style={styles.downloadButtonText}>Download Package</Text>
+        <Text style={styles.downloadButtonText}>{t('resources.downloadButtonText')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -64,9 +68,9 @@ const ResourcesScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Resources</Text>
+        <Text style={styles.headerTitle}>{t('resources.headerTitle')}</Text>
         <Text style={styles.headerSubtitle}>
-          Download important documents and guides to help you prepare.
+          {t('resources.headerSubtitle')}
         </Text>
       </View>
       <FlatList

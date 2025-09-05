@@ -1,31 +1,35 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, Switch, FlatList } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Switch, FlatList } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 
 // Define a new TypeScript interface for the received data
 interface ReceivedDataItem {
   id: string;
   name: string;
-  role: string;
+  roleKey: string;
   time: string;
 }
 
 // Placeholder for user details and received data
 const userDetails = {
   name: 'Ipshita', // Replace with dynamic data from state or context
-  role: 'Citizen',
+  role: 'roles.citizen.title',
   phone: '9876543210',
   geolocation: '13.0827° N, 80.2707° E', // Replace with live geolocation data
   deviceId: 'ajk3098fjao23jfa', // Replace with a real device ID
+  // FIX: Add signal strength
+  signalStrength: 'Good', 
 };
 
 const receivedData: ReceivedDataItem[] = [
-  { id: '1', name: 'Alex Johnson', role: 'Citizen', time: '5 mins ago' },
-  { id: '2', name: 'Jane Doe', role: 'Official', time: '10 mins ago' },
-  { id: '3', name: 'Community Member', role: 'Citizen', time: '15 mins ago' },
+  { id: '1', name: 'Alex Johnson', roleKey: 'roles.citizen.title', time: '5 mins' },
+  { id: '2', name: 'Jane Doe', roleKey: 'roles.official.title', time: '10 mins' },
+  { id: '3', name: 'Community Member', roleKey: 'roles.citizen.title', time: '15 mins' },
 ];
 
 const OfflineScreen = () => {
+  const { t } = useTranslation();
   const [isOfflineModeEnabled, setOfflineModeEnabled] = useState(false);
 
   // Add a type annotation to the renderItem function
@@ -34,74 +38,81 @@ const OfflineScreen = () => {
       <Icon name="account-circle-outline" size={24} color="#138D35" />
       <View style={styles.receivedItemContent}>
         <Text style={styles.receivedItemName}>{item.name}</Text>
-        <Text style={styles.receivedItemRole}>{item.role}</Text>
+        <Text style={styles.receivedItemRole}>{t(item.roleKey)}</Text>
       </View>
-      <Text style={styles.receivedItemTime}>{item.time}</Text>
+      <Text style={styles.receivedItemTime}>{t('offline.received.timeAgo', { time: item.time })}</Text>
     </View>
   );
 
   return (
+    // FIX: Use SafeAreaView and the FlatList itself for scrolling
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-        {/* Connection Status Section */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Connection Status</Text>
-          <View style={styles.connectionStatus}>
-            <View style={[styles.statusDot, { backgroundColor: isOfflineModeEnabled ? '#f39c12' : '#2ecc71' }]} />
-            <Text style={styles.statusText}>
-              {isOfflineModeEnabled ? 'Offline Mode' : 'Online'} • {isOfflineModeEnabled ? 'Using local data' : 'All services active'}
-            </Text>
-          </View>
-          <View style={styles.listItem}>
-            <Text style={styles.listItemText}>Offline Mode</Text>
-            <Switch
-              onValueChange={setOfflineModeEnabled}
-              value={isOfflineModeEnabled}
-              trackColor={{ false: '#767577', true: '#f39c12' }}
-              thumbColor={isOfflineModeEnabled ? '#f4f3f4' : '#f4f3f4'}
-            />
-          </View>
+      {/* Connection Status Section */}
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>{t('offline.status.title')}</Text>
+        <View style={styles.connectionStatus}>
+          <View style={[styles.statusDot, { backgroundColor: isOfflineModeEnabled ? '#f39c12' : '#2ecc71' }]} />
+          <Text style={styles.statusText}>
+            {isOfflineModeEnabled ? t('offline.status.offlineText') : t('offline.status.onlineText')} • {isOfflineModeEnabled ? t('offline.status.usingLocalData') : t('offline.status.servicesActive')}
+          </Text>
         </View>
-
-        {/* Section 1: Your Shared Details */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Your Shared Details</Text>
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Name:</Text>
-            <Text style={styles.detailValue}>{userDetails.name}</Text>
-          </View>
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Role:</Text>
-            <Text style={styles.detailValue}>{userDetails.role}</Text>
-          </View>
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Phone No.:</Text>
-            <Text style={styles.detailValue}>{userDetails.phone}</Text>
-          </View>
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Geolocation:</Text>
-            <Text style={styles.detailValue}>{userDetails.geolocation}</Text>
-          </View>
-          <View style={styles.detailItem}>
-            <Text style={styles.detailLabel}>Device ID:</Text>
-            <Text style={styles.detailValue}>{userDetails.deviceId}</Text>
-          </View>
-        </View>
-
-        {/* Section 2: Received Data */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Received Data (from nearby devices)</Text>
-          <FlatList
-            data={receivedData}
-            renderItem={renderReceivedItem}
-            keyExtractor={item => item.id}
-            ListEmptyComponent={() => (
-              <Text style={styles.emptyText}>No data received yet.</Text>
-            )}
-            scrollEnabled={false}
+        <View style={styles.listItem}>
+          <Text style={styles.listItemText}>{t('offline.status.offlineMode')}</Text>
+          <Switch
+            onValueChange={setOfflineModeEnabled}
+            value={isOfflineModeEnabled}
+            trackColor={{ false: '#767577', true: '#f39c12' }}
+            thumbColor={isOfflineModeEnabled ? '#f4f3f4' : '#f4f3f4'}
           />
         </View>
-      </ScrollView>
+      </View>
+
+      {/* Section 1: Your Shared Details */}
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>{t('offline.details.title')}</Text>
+        <View style={styles.detailItem}>
+          <Text style={styles.detailLabel}>{t('offline.details.nameLabel')}</Text>
+          <Text style={styles.detailValue}>{userDetails.name}</Text>
+        </View>
+        <View style={styles.detailItem}>
+          <Text style={styles.detailLabel}>{t('offline.details.roleLabel')}</Text>
+          <Text style={styles.detailValue}>{t(userDetails.role)}</Text>
+        </View>
+        <View style={styles.detailItem}>
+          <Text style={styles.detailLabel}>{t('offline.details.phoneLabel')}</Text>
+          <Text style={styles.detailValue}>{userDetails.phone}</Text>
+        </View>
+        <View style={styles.detailItem}>
+          <Text style={styles.detailLabel}>{t('offline.details.geolocationLabel')}</Text>
+          <Text style={styles.detailValue}>{userDetails.geolocation}</Text>
+        </View>
+        <View style={styles.detailItem}>
+          <Text style={styles.detailLabel}>{t('offline.details.deviceIdLabel')}</Text>
+          <Text style={styles.detailValue}>{userDetails.deviceId}</Text>
+        </View>
+        {/* NEW: Signal Strength */}
+        <View style={styles.detailItem}>
+          <Text style={styles.detailLabel}>{t('offline.details.signalStrength')}</Text>
+          <View style={styles.signalContainer}>
+            <Icon name="signal" size={16} color="#333" />
+            <Text style={styles.detailValue}>{userDetails.signalStrength}</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Section 2: Received Data */}
+      <View style={styles.sectionContainer}>
+        <Text style={styles.sectionTitle}>{t('offline.received.title')}</Text>
+        <FlatList
+          data={receivedData}
+          renderItem={renderReceivedItem}
+          keyExtractor={item => item.id}
+          ListEmptyComponent={() => (
+            <Text style={styles.emptyText}>{t('offline.received.emptyText')}</Text>
+          )}
+          // Removed scrollEnabled={false} and the wrapping <ScrollView>
+        />
+      </View>
     </SafeAreaView>
   );
 };
@@ -171,6 +182,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
   },
+  signalContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   receivedItemCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -208,3 +223,4 @@ const styles = StyleSheet.create({
 });
 
 export default OfflineScreen;
+
