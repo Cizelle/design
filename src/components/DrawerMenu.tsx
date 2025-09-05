@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
-import { View, Text, StyleSheet} from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTranslation } from 'react-i18next';
@@ -20,12 +20,11 @@ const DrawerMenu = (props: any) => {
         <DrawerItem
           label={t('drawer.menuItems.donations')}
           labelStyle={styles.drawerLabel}
-          // eslint-disable-next-line react/no-unstable-nested-components, @typescript-eslint/no-unused-vars
           icon={({ color, size }) => (
             <Icon name="heart-outline" size={size} color="#138D35" />
           )}
           style={styles.drawerItem}
-          onPress={() => { /* Navigate to Donations screen if needed */ }}
+          onPress={() => navigation.navigate('Donations')}
         />
         <DrawerItem
           label={t('drawer.menuItems.simulationDrills')}
@@ -43,7 +42,7 @@ const DrawerMenu = (props: any) => {
             <Icon name="book-open-outline" size={size} color="#138D35" />
           )}
           style={styles.drawerItem}
-          onPress={() => { 'Resources' }}
+          onPress={() => navigation.navigate('Resources')}
         />
         <DrawerItem
           label={t('drawer.menuItems.allReports')}
@@ -52,7 +51,7 @@ const DrawerMenu = (props: any) => {
             <Icon name="file-document-outline" size={size} color="#138D35" />
           )}
           style={styles.drawerItem}
-          onPress={() => { /* Navigate to All Reports screen */ }}
+          onPress={() => navigation.navigate('Hazards')}
         />
         <DrawerItem
           label={t('drawer.menuItems.missingPersonFinder')}
@@ -61,7 +60,7 @@ const DrawerMenu = (props: any) => {
             <Icon name="magnify" size={size} color="#138D35" />
           )}
           style={styles.drawerItem}
-          onPress={() => {'MissingPersonFinder' }}
+          onPress={() => navigation.navigate('MissingPersonFinder')}
         />
         <DrawerItem
           label={t('drawer.menuItems.settings')}
@@ -70,7 +69,7 @@ const DrawerMenu = (props: any) => {
             <Icon name="cog-outline" size={size} color="#138D35" />
           )}
           style={styles.drawerItem}
-          onPress={() => { 'Settings' }}
+          onPress={() => navigation.navigate('Settings')}
         />
         <DrawerItem
           label={t('drawer.menuItems.logout')}
@@ -79,7 +78,7 @@ const DrawerMenu = (props: any) => {
             <Icon name="logout" size={size} color="#D45348" />
           )}
           style={styles.drawerItem}
-          onPress={() => { navigation.navigate('Login') }} // Navigate back to Login
+          onPress={() => { navigation.navigate('Login') }}
         />
       </DrawerContentScrollView>
 
@@ -111,13 +110,14 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   drawerItem: {
-    marginVertical: 0,
+    // FIX: Add some vertical margin for spacing
+    marginVertical: 5,
   },
   drawerLabel: {
     color: '#333',
     fontSize: 16,
     fontWeight: '500',
-    marginLeft: -20,
+    // FIX: Remove the negative margin that caused the overlap
   },
   logoutLabel: {
     color: '#D45348',

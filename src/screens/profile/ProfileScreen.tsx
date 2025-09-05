@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native'; // Remove Image from here
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ProfileStackParamList } from '../../navigation/MainTabNavigator';
@@ -17,8 +18,6 @@ const ProfileScreen: React.FC<Props> = () => {
     name: 'Ipshita Das',
     email: 'ipshita.das@example.com',
     phone: '+91 98765 43210',
-    profilePic: require('../assets/profile-placeholder.png'), // Add a placeholder image in your assets folder
-    // You'd fetch these details from your backend
   };
 
   const notProvidedStatus = t('profile.status.notProvided');
@@ -30,10 +29,10 @@ const ProfileScreen: React.FC<Props> = () => {
       </View>
 
       <View style={styles.profileCard}>
-        <Image
-          source={user.profilePic}
-          style={styles.profileImage}
-        />
+        {/* FIX: Use a placeholder icon instead of an image */}
+        <View style={styles.profileIconContainer}>
+            <Icon name="account-circle" size={80} color="#666" />
+        </View>
         <View style={styles.detailsContainer}>
           <Text style={styles.nameText}>{user.name}</Text>
           <Text style={styles.detailText}>{user.email}</Text>
@@ -111,11 +110,14 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
   },
-  profileImage: {
+  profileIconContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
     marginRight: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#e0e0e0', // Light background for the icon
   },
   detailsContainer: {
     flex: 1,

@@ -28,26 +28,12 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       Alert.alert(t('login.alert.failedTitle'), t('login.alert.failedMessage'));
       return;
     }
+    // FIX: Pass username to MainTabs as a parameter
     navigation.navigate('MainTabs', { username: username });
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      {/* Language Picker */}
-      <View style={styles.languagePickerContainer}>
-        <Text style={styles.languageLabel}>{t('settings.language.changeLanguage')}:</Text>
-        <View style={styles.pickerWrapper}>
-          <Picker
-            selectedValue={selectedLanguage}
-            onValueChange={(itemValue) => changeLanguage(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label={t('languages.english')} value="en" />
-            <Picker.Item label={t('languages.hindi')} value="hi" />
-          </Picker>
-        </View>
-      </View>
-
       <AppHeader title={t('login.header.title')} subtitle={t('login.header.subtitle')} />
       
       <Text style={styles.welcomeText}>{t('login.welcome')}</Text>
@@ -100,6 +86,21 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
+      
+      {/* LANGUAGE PICKER MOVED TO THE END */}
+      <View style={[styles.languagePickerContainer, styles.languagePickerBottom]}>
+        <Text style={styles.languageLabel}>{t('settings.language.changeLanguage')}:</Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={selectedLanguage}
+            onValueChange={(itemValue) => changeLanguage(itemValue)}
+            style={styles.picker}
+          >
+            <Picker.Item label={t('languages.english')} value="en" />
+            <Picker.Item label={t('languages.hindi')} value="hi" />
+          </Picker>
+        </View>
+      </View>
     </ScrollView>
   );
 };
@@ -110,6 +111,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingBottom: 20,
   },
+  // Keep the original styles for centering and width
   languagePickerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -117,6 +119,11 @@ const styles = StyleSheet.create({
     width: '90%',
     alignSelf: 'center',
     marginTop: 20,
+  },
+  // Add a specific style to place it at the bottom, if needed
+  languagePickerBottom: {
+    marginTop: 'auto', // Pushes it to the bottom of the container
+    marginBottom: 20, // Add some space from the bottom
   },
   languageLabel: {
     fontSize: 16,

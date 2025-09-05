@@ -12,10 +12,41 @@ import AddInfoPersonalScreen from '../screens/profile/AddInfoPersonalScreen';
 import AddInfoMedicalScreen from '../screens/profile/AddInfoMedicalScreen';
 import ProfileConfirmationScreen from '../screens/auth/ProfileConfirmationScreen';
 import SosScreen from '../screens/hazards/SosScreen';
-import { View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-const OfflineScreen = () => <></>;
+const OfflineScreen = () => {
+  const { t } = useTranslation();
+  return (
+    <View style={offlineStyles.container}>
+      <Icon name="signal-off" size={60} color="#999" />
+      <Text style={offlineStyles.title}>{t('offlineScreen.title')}</Text>
+      <Text style={offlineStyles.subtitle}>{t('offlineScreen.subtitle')}</Text>
+    </View>
+  );
+};
+
+const offlineStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 20,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 5,
+  },
+});
 
 const Tab = createBottomTabNavigator();
 const DashboardStack = createNativeStackNavigator();
