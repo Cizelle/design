@@ -2,21 +2,18 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import DashboardScreen from './DashboardScreen';
-import ReportHazardScreen from './ReportHazardScreen';
-import DonationScreen from './DonationScreen';
-import DrawerMenu from './components/DrawerMenu';
+import DashboardScreen from '../screens/dashboard/DashboardScreen';
+import ReportHazardScreen from '../screens/hazards/ReportHazardScreen';
+import DonationScreen from '../screens/donations/DonationScreen';
+import DrawerMenu from '../components/DrawerMenu';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import FamilyScreen from './FamilyScreen';
-import AddFamilyMemberScreen from './AddFamilyMemberScreen';
-import ProfileScreen from './ProfileScreen';
-import AddInfoPersonalScreen from './AddInfoPersonalScreen';
-import AddInfoMedicalScreen from './AddInfoMedicalScreen';
-import ProfileConfirmationScreen from './ProfileConfirmationScreen';
+import ProfileScreen from '../screens/profile/ProfileScreen';
+import AddInfoPersonalScreen from '../screens/profile/AddInfoPersonalScreen';
+import AddInfoMedicalScreen from '../screens/profile/AddInfoMedicalScreen';
+import ProfileConfirmationScreen from '../screens/auth/ProfileConfirmationScreen';
+import SosScreen from '../screens/hazards/SosScreen';
+import { View } from 'react-native';
 
-// Placeholder screens for other tabs
-const FamilyScreen = () => <></>;
-import SosScreen from './SosScreen';
 const OfflineScreen = () => <></>;
 
 const Tab = createBottomTabNavigator();
@@ -53,17 +50,6 @@ const DashboardStackScreen = ({ route }: any) => {
   );
 };
 
-const FamilyStack = createNativeStackNavigator();
-
-const FamilyStackScreen = () => {
-  return (
-    <FamilyStack.Navigator screenOptions={{ headerShown: false }}>
-      <FamilyStack.Screen name="FamilyHome" component={FamilyScreen} />
-      <FamilyStack.Screen name="AddFamilyMember" component={AddFamilyMemberScreen} />
-    </FamilyStack.Navigator>
-  );
-};
-
 const ProfileStack = createNativeStackNavigator();
 
 const ProfileStackScreen = () => {
@@ -86,12 +72,14 @@ const MainTabs = ({ route }: any) => {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
+          let iconColor = color;
           switch (route.name) {
             case 'Dashboard':
               iconName = focused ? 'home-variant' : 'home-variant-outline';
               break;
             case 'Family':
               iconName = focused ? 'account-group' : 'account-group-outline';
+              iconColor = '#999'; // Make the icon gray to indicate it's inactive
               break;
             case 'SOS':
               iconName = 'alert-octagon';
@@ -105,7 +93,7 @@ const MainTabs = ({ route }: any) => {
             default:
               iconName = 'help-circle';
           }
-          return <Icon name={iconName} size={size} color={color} />;
+          return <Icon name={iconName} size={size} color={iconColor} />;
         },
         tabBarActiveTintColor: '#138D35',
         tabBarInactiveTintColor: '#999',
@@ -125,7 +113,18 @@ const MainTabs = ({ route }: any) => {
         component={DashboardStackScreen}
         initialParams={{ username }}
       />
-      <Tab.Screen name="Family" component={FamilyStackScreen} />
+      {/* The Family tab is disabled by setting a custom, non-interactive button */}
+      <Tab.Screen
+        name="Family"
+        component={() => null} // Point to a dummy component
+        options={{
+          tabBarButton: (props) => (
+            <View {...props} style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              {props.children}
+            </View>
+          ),
+        }}
+      />
       <Tab.Screen name="SOS" component={SosScreen} />
       <Tab.Screen name="Offline" component={OfflineScreen} />
       <Tab.Screen name="Profile" component={ProfileStackScreen} />

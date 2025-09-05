@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
-import { DashboardStackParamList } from './MainTabNavigator'; // Import the new type
+import { DashboardStackParamList } from '../../navigation/MainTabNavigator'; // Import the new type
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 // Correctly define the props for this screen within the nested stack
@@ -79,13 +79,19 @@ const DashboardScreen: React.FC<Props> = ({ route }) => {
           <Text style={styles.cardTitle}>Track Family</Text>
           <Text style={styles.cardSubtitle}>Find loved ones</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.card}>
-          <View style={styles.cardIcon}>
-            <Icon name="power-plug-off" size={40} color="#FF9800" />
-          </View>
-          <Text style={styles.cardTitle}>Offline Mode</Text>
-          <Text style={styles.cardSubtitle}>Emergency backup</Text>
-        </TouchableOpacity>
+
+        
+<TouchableOpacity
+  style={styles.card}
+  onPress={() => navigation.navigate('Offline')} // This is the change
+>
+  <View style={styles.cardIcon}>
+    <Icon name="power-plug-off" size={40} color="#FF9800" />
+  </View>
+  <Text style={styles.cardTitle}>Offline Mode</Text>
+  <Text style={styles.cardSubtitle}>Emergency backup</Text>
+</TouchableOpacity>
+
       </View>
 
       {/* Nearby Activity Section */}

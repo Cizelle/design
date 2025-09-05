@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ProfileStackParamList } from './MainTabNavigator';
+import { ProfileStackParamList } from '../../navigation/MainTabNavigator';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 type Props = NativeStackScreenProps<ProfileStackParamList, 'ProfileHome'>;

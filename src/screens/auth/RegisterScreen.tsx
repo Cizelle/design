@@ -4,10 +4,10 @@ import {
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
-import AppHeader from './components/AppHeader';
+import { RootStackParamList } from '../../../App';
+import AppHeader from '../../components/AppHeader';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import RoleSpecificFields from './components/RoleSpecificFields'; // Import the new component
+import RoleSpecificFields from '../../components/RoleSpecificFields'; // Import the new component
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
 

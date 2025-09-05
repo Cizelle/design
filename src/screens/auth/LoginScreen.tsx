@@ -3,8 +3,8 @@ import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
-import AppHeader from './components/AppHeader';
+import { RootStackParamList } from '../../../App';
+import AppHeader from '../../components/AppHeader';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;

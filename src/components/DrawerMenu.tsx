@@ -32,7 +32,7 @@ const DrawerMenu = (props: any) => {
             <Icon name="gamepad-variant-outline" size={size} color="#138D35" />
           )}
           style={styles.drawerItem}
-          onPress={() => { /* Navigate to Drills screen */ }}
+onPress={() => { navigation.navigate('SimulationDrills') }}
         />
         <DrawerItem
           label="Resources"
@@ -41,7 +41,7 @@ const DrawerMenu = (props: any) => {
             <Icon name="book-open-outline" size={size} color="#138D35" />
           )}
           style={styles.drawerItem}
-          onPress={() => { /* Navigate to Resources screen */ }}
+          onPress={() => { 'Resources' }}
         />
         <DrawerItem
           label="All Reports"
@@ -59,7 +59,7 @@ const DrawerMenu = (props: any) => {
             <Icon name="magnify" size={size} color="#138D35" />
           )}
           style={styles.drawerItem}
-          onPress={() => { /* Navigate to Missing Person Finder screen */ }}
+          onPress={() => {'MissingPersonFinder' }}
         />
         <DrawerItem
           label="Settings"
@@ -68,7 +68,7 @@ const DrawerMenu = (props: any) => {
             <Icon name="cog-outline" size={size} color="#138D35" />
           )}
           style={styles.drawerItem}
-          onPress={() => { /* Navigate to Settings screen */ }}
+          onPress={() => { 'Settings' }}
         />
         <DrawerItem
           label="Logout"

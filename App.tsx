@@ -1,10 +1,10 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import LoginScreen from './src/LoginScreen';
-import RegisterScreen from './src/RegisterScreen';
-import ChooseRoleScreen from './src/ChooseRoleScreen';
-import MainTabNavigator from './src/MainTabNavigator'; // Import the new tab navigator
+import LoginScreen from './src/screens/auth/LoginScreen';
+import RegisterScreen from './src/screens/auth/RegisterScreen';
+import ChooseRoleScreen from './src/screens/auth/ChooseRoleScreen';
+import MainDrawerNavigator from './src/navigation/MainTabNavigator'; // Import the new tab navigator
 
 // This defines the screens in your main stack.
 // 'MainTabs' is now a screen that contains the entire tab bar.
@@ -38,7 +38,7 @@ const App = () => {
         />
         <Stack.Screen
           name="MainTabs"
-          component={MainTabNavigator}
+          component={MainDrawerNavigator}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>
