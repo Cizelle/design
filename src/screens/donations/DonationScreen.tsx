@@ -1,31 +1,34 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
-const paymentMethods = ['UPI', 'GPay', 'Crypto'];
+import { useTranslation } from 'react-i18next';
 
 const DonationScreen = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const [amount, setAmount] = useState('');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currency, setCurrency] = useState('INR');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [purpose, setPurpose] = useState('');
   const [totalDonated, setTotalDonated] = useState(0);
 
+  const paymentMethods = [t('donation.paymentMethods.upi'), t('donation.paymentMethods.gpay'), t('donation.paymentMethods.crypto')];
+
   const handleDonate = () => {
     const donationAmount = parseFloat(amount);
     if (isNaN(donationAmount) || donationAmount <= 0 || !paymentMethod) {
-      Alert.alert('Incomplete Form', 'Please enter a valid amount and select a payment method.');
+      Alert.alert(t('donation.alert.incompleteTitle'), t('donation.alert.incompleteMessage'));
       return;
     }
-    // Simulate payment transaction
-    Alert.alert('Donation Confirmed!', `Thank you for your donation of ₹${donationAmount.toFixed(2)}.`);
+    Alert.alert(
+      t('donation.alert.successTitle'),
+      t('donation.alert.successMessage', { amount: donationAmount.toFixed(2), currency: t('donation.currencySymbol') })
+    );
     setTotalDonated(prev => prev + donationAmount);
-    // Clear form fields
     setAmount('');
     setPaymentMethod('');
     setPurpose('');
@@ -37,24 +40,26 @@ const DonationScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="arrow-left" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Donate</Text>
+        <Text style={styles.headerTitle}>{t('donation.headerTitle')}</Text>
       </View>
       <View style={styles.content}>
         <View style={styles.totalDonationCard}>
-          <Text style={styles.totalDonationLabel}>Total Amount Donated</Text>
-          <Text style={styles.totalDonationAmount}>₹{totalDonated.toFixed(2)}</Text>
+          <Text style={styles.totalDonationLabel}>{t('donation.totalDonatedLabel')}</Text>
+          <Text style={styles.totalDonationAmount}>
+            {t('donation.currencySymbol')}{totalDonated.toFixed(2)}
+          </Text>
         </View>
 
-        <Text style={styles.inputLabel}>Donation Amount *</Text>
+        <Text style={styles.inputLabel}>{t('donation.amountLabel')} *</Text>
         <TextInput
           style={styles.input}
-          placeholder="Enter amount"
+          placeholder={t('donation.amountPlaceholder')}
           keyboardType="numeric"
           value={amount}
           onChangeText={setAmount}
         />
 
-        <Text style={styles.inputLabel}>Payment Method *</Text>
+        <Text style={styles.inputLabel}>{t('donation.paymentMethodLabel')} *</Text>
         <View style={styles.selectorContainer}>
           {paymentMethods.map((method) => (
             <TouchableOpacity
@@ -77,16 +82,16 @@ const DonationScreen = () => {
           ))}
         </View>
 
-        <Text style={styles.inputLabel}>Purpose (Optional)</Text>
+        <Text style={styles.inputLabel}>{t('donation.purposeLabel')}</Text>
         <TextInput
           style={styles.input}
-          placeholder="e.g. Cyclone relief"
+          placeholder={t('donation.purposePlaceholder')}
           value={purpose}
           onChangeText={setPurpose}
         />
 
         <TouchableOpacity style={styles.mainButton} onPress={handleDonate}>
-          <Text style={styles.mainButtonText}>Donate Now</Text>
+          <Text style={styles.mainButtonText}>{t('donation.donateButton')}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

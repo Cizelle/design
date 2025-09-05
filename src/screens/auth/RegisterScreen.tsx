@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView, Alert
@@ -7,14 +8,15 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../App';
 import AppHeader from '../../components/AppHeader';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import RoleSpecificFields from '../../components/RoleSpecificFields'; // Import the new component
+import RoleSpecificFields from '../../components/RoleSpecificFields';
+import { useTranslation } from 'react-i18next';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
 const RegisterScreen: React.FC<Props> = ({ navigation, route }) => {
-  const { role } = route.params; // Get the role from navigation parameters
+  const { t } = useTranslation();
+  const { role } = route.params;
 
-  // Common fields for all roles
   const [photo, setPhoto] = useState<string | undefined>();
   const [fullname, setFullname] = useState('');
   const [email, setEmail] = useState('');
@@ -23,15 +25,15 @@ const RegisterScreen: React.FC<Props> = ({ navigation, route }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // Extra fields for Officials/Analysts
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [country, setCountry] = useState('');
   const [designation, setDesignation] = useState('');
   const [organizationName, setOrganizationName] = useState('');
   const [employeeId, setEmployeeId] = useState('');
   const [idProofUri, setIdProofUri] = useState<string | undefined>();
   const [authorizationLetterUri, setAuthorizationLetterUri] = useState<string | undefined>();
-
-  const [step, setStep] = useState(1); // For multi-step registration (Citizen always skips to step 2 visually)
+  const [step, setStep] = useState(1);
 
   const handlePhotoPick = async () => {
     const result = await launchImageLibrary({ mediaType: "photo" });
@@ -41,52 +43,40 @@ const RegisterScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const handleNextStep = () => {
-    // Basic validation for step 1
-    if (!fullname || !email || !phone || !password || !confirmPassword || !photo) {
-      Alert.alert('Missing Information', 'Please fill all required fields and upload a photo.');
+    if (!fullname || !email || !phone || !password || !confirmPassword || !photo || !city || !state || !country) {
+      Alert.alert(t('register.alert.missingInfoTitle'), t('register.alert.missingInfoMessage'));
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert('Password Mismatch', 'Passwords do not match.');
+      Alert.alert(t('register.alert.passwordMismatchTitle'), t('register.alert.passwordMismatchMessage'));
       return;
     }
-    // For Citizen, "Next" acts as "Register"
     if (role === 'citizen') {
       handleFinalRegister();
     } else {
-      setStep(2); // Move to step 2 for Official/Analyst
+      setStep(2);
     }
   };
 
   const handleFinalRegister = () => {
-    // Implement your registration logic here
-    // This is where you would send data to your backend
     const userData = {
-      role,
-      fullname,
-      email,
-      phone,
-      password,
-      photo,
-      // Include role-specific data if applicable
+      role, fullname, email, phone, password, photo, city, state, country,
       ...(role !== 'citizen' && {
-        designation,
-        organizationName,
-        employeeId,
-        idProofUri,
-        authorizationLetterUri,
+        designation, organizationName, employeeId, idProofUri, authorizationLetterUri,
       }),
     };
     console.log('Registering user:', userData);
-    Alert.alert('Registration Successful', `User ${fullname} registered as ${role}.`);
-    navigation.navigate('Login'); // Navigate back to login or to a success screen
+    Alert.alert(t('register.alert.successTitle'), t('register.alert.successMessage', { fullname: fullname, role: t(`roles.${role}.title`) }));
+    navigation.navigate('Login');
   };
+
+  const roleTitleKey = `roles.${role}.title`;
+  const headerSubtitle = t('register.header.subtitle', { role: t(roleTitleKey) });
 
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      <AppHeader title="Register" subtitle={`Join Disaster Manager today as a ${role}`} />
+      <AppHeader title={t('register.header.title')} subtitle={headerSubtitle} />
       <View style={styles.content}>
-        {/* Step 1: Common Registration Fields */}
         {step === 1 && (
           <>
             <TouchableOpacity style={styles.photoUploadContainer} onPress={handlePhotoPick}>
@@ -99,41 +89,65 @@ const RegisterScreen: React.FC<Props> = ({ navigation, route }) => {
                 <Icon name="upload" size={20} color="#138D35" />
               </View>
             </TouchableOpacity>
-            <Text style={styles.uploadPhotoText}>Upload Photo *</Text>
-            <Text style={styles.requiredText}>Required</Text>
+            <Text style={styles.uploadPhotoText}>{t('register.photoUpload.label')}</Text>
+            <Text style={styles.requiredText}>{t('register.photoUpload.required')}</Text>
 
-            <Text style={styles.inputLabel}>Full Name *</Text>
+            <Text style={styles.inputLabel}>{t('register.fullNameLabel')} *</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter your full name"
+              placeholder={t('register.fullNamePlaceholder')}
               value={fullname}
               onChangeText={setFullname}
             />
 
-            <Text style={styles.inputLabel}>Email *</Text>
+            <Text style={styles.inputLabel}>{t('register.emailLabel')} *</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter your email"
+              placeholder={t('register.emailPlaceholder')}
               value={email}
               autoCapitalize='none'
               keyboardType='email-address'
               onChangeText={setEmail}
             />
 
-            <Text style={styles.inputLabel}>Phone Number *</Text>
+            <Text style={styles.inputLabel}>{t('register.phoneLabel')} *</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter your phone number"
+              placeholder={t('register.phonePlaceholder')}
               value={phone}
               keyboardType='phone-pad'
               onChangeText={setPhone}
             />
+            
+            <Text style={styles.inputLabel}>{t('register.cityLabel')} *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('register.cityPlaceholder')}
+              value={city}
+              onChangeText={setCity}
+            />
 
-            <Text style={styles.inputLabel}>Password *</Text>
+            <Text style={styles.inputLabel}>{t('register.stateLabel')} *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('register.statePlaceholder')}
+              value={state}
+              onChangeText={setState}
+            />
+            
+            <Text style={styles.inputLabel}>{t('register.countryLabel')} *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('register.countryPlaceholder')}
+              value={country}
+              onChangeText={setCountry}
+            />
+
+            <Text style={styles.inputLabel}>{t('register.passwordLabel')} *</Text>
             <View style={styles.passwordInputContainer}>
               <TextInput
                 style={styles.passwordInput}
-                placeholder="Create a password"
+                placeholder={t('register.passwordPlaceholder')}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -143,11 +157,11 @@ const RegisterScreen: React.FC<Props> = ({ navigation, route }) => {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.inputLabel}>Confirm Password *</Text>
+            <Text style={styles.inputLabel}>{t('register.confirmPasswordLabel')} *</Text>
             <View style={styles.passwordInputContainer}>
               <TextInput
                 style={styles.passwordInput}
-                placeholder="Confirm your password"
+                placeholder={t('register.confirmPasswordPlaceholder')}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 secureTextEntry={!showConfirmPassword}
@@ -157,18 +171,16 @@ const RegisterScreen: React.FC<Props> = ({ navigation, route }) => {
               </TouchableOpacity>
             </View>
             
-            {/* Show "Next" button for Official/Analyst, "Register" for Citizen */}
             <TouchableOpacity style={styles.mainButton} onPress={handleNextStep}>
-              <Text style={styles.mainButtonText}>{role === 'citizen' ? 'Register' : 'Next'}</Text>
+              <Text style={styles.mainButtonText}>{role === 'citizen' ? t('register.registerButton') : t('register.nextButton')}</Text>
             </TouchableOpacity>
           </>
         )}
 
-        {/* Step 2: Role-Specific Fields for Official/Analyst */}
         {step === 2 && (role !== 'citizen') && (
           <>
             <RoleSpecificFields
-              role={role as 'official' | 'analyst'} // Cast to specific roles
+              role={role as 'official' | 'analyst'}
               designation={designation}
               setDesignation={setDesignation}
               organizationName={organizationName}
@@ -180,22 +192,21 @@ const RegisterScreen: React.FC<Props> = ({ navigation, route }) => {
               authorizationLetterUri={authorizationLetterUri}
               setAuthorizationLetterUri={setAuthorizationLetterUri}
             />
-             <TouchableOpacity style={styles.mainButton} onPress={handleFinalRegister}>
-              <Text style={styles.mainButtonText}>Register</Text>
+            <TouchableOpacity style={styles.mainButton} onPress={handleFinalRegister}>
+              <Text style={styles.mainButtonText}>{t('register.registerButton')}</Text>
             </TouchableOpacity>
           </>
         )}
 
-        {/* Common links/buttons */}
         <TouchableOpacity style={styles.oauthButton}>
           <Icon name="google" size={20} color="#DA4831" style={styles.oauthIcon} />
-          <Text style={styles.oauthText}>Register with Google</Text>
+          <Text style={styles.oauthText}>{t('register.googleButton')}</Text>
         </TouchableOpacity>
 
         <View style={styles.switchRow}>
-          <Text style={styles.switchText}>Already have an account? </Text>
+          <Text style={styles.switchText}>{t('register.haveAccountText')} </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.switchLink}>Login</Text>
+            <Text style={styles.switchLink}>{t('register.loginLink')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -318,7 +329,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: 'center',
-    marginBottom: 20, // Adjusted for spacing
+    marginBottom: 20,
   },
   oauthIcon: {
     marginRight: 10,

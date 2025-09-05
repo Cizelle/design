@@ -1,8 +1,9 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 
 interface RoleSpecificFieldsProps {
   role: 'official' | 'analyst';
@@ -31,6 +32,7 @@ const RoleSpecificFields: React.FC<RoleSpecificFieldsProps> = ({
   authorizationLetterUri,
   setAuthorizationLetterUri,
 }) => {
+  const { t } = useTranslation();
 
   const handleDocumentPick = async (setter: (uri: string | undefined) => void) => {
     const result = await launchImageLibrary({ mediaType: "photo", selectionLimit: 1 });
@@ -39,60 +41,63 @@ const RoleSpecificFields: React.FC<RoleSpecificFieldsProps> = ({
     }
   };
 
+  // Dynamically get the role title for the header
+  const roleTitle = role === 'official' ? t('roles.official.title') : t('roles.analyst.title');
+
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Additional Information for {role === 'official' ? 'Official' : 'Analyst'}</Text>
+      <Text style={styles.sectionTitle}>{t('roleSpecificFields.sectionTitle', { role: roleTitle })}</Text>
 
-      <Text style={styles.inputLabel}>Designation *</Text>
+      <Text style={styles.inputLabel}>{t('roleSpecificFields.labels.designation')}</Text>
       <TextInput
         style={styles.input}
-        placeholder="Enter your designation"
+        placeholder={t('roleSpecificFields.placeholders.designation')}
         value={designation}
         onChangeText={setDesignation}
       />
 
-      <Text style={styles.inputLabel}>Organization Name *</Text>
+      <Text style={styles.inputLabel}>{t('roleSpecificFields.labels.organizationName')}</Text>
       <TextInput
         style={styles.input}
-        placeholder="Enter your organization's name"
+        placeholder={t('roleSpecificFields.placeholders.organizationName')}
         value={organizationName}
         onChangeText={setOrganizationName}
       />
 
-      <Text style={styles.inputLabel}>Employee ID *</Text>
+      <Text style={styles.inputLabel}>{t('roleSpecificFields.labels.employeeId')}</Text>
       <TextInput
         style={styles.input}
-        placeholder="Enter your employee ID"
+        placeholder={t('roleSpecificFields.placeholders.employeeId')}
         value={employeeId}
         onChangeText={setEmployeeId}
       />
 
-      <Text style={styles.inputLabel}>ID Proof Document *</Text>
+      <Text style={styles.inputLabel}>{t('roleSpecificFields.labels.idProofDocument')}</Text>
       <TouchableOpacity
         style={styles.documentUploadButton}
         onPress={() => handleDocumentPick(setIdProofUri)}
       >
         <Icon name="file-upload" size={20} color="#138D35" />
         <Text style={styles.documentUploadButtonText}>
-          {idProofUri ? 'Change Document' : 'Upload ID Proof'}
+          {idProofUri ? t('roleSpecificFields.documentUploads.changeDocument') : t('roleSpecificFields.documentUploads.uploadIdProof')}
         </Text>
       </TouchableOpacity>
       {idProofUri && <Text style={styles.documentName}>{idProofUri.split('/').pop()}</Text>}
-      <Text style={styles.requiredText}>Required</Text>
+      <Text style={styles.requiredText}>{t('roleSpecificFields.requiredText')}</Text>
 
 
-      <Text style={styles.inputLabel}>Authorization Letter *</Text>
+      <Text style={styles.inputLabel}>{t('roleSpecificFields.labels.authorizationLetter')}</Text>
       <TouchableOpacity
         style={styles.documentUploadButton}
         onPress={() => handleDocumentPick(setAuthorizationLetterUri)}
       >
         <Icon name="file-upload" size={20} color="#138D35" />
         <Text style={styles.documentUploadButtonText}>
-          {authorizationLetterUri ? 'Change Document' : 'Upload Authorization Letter'}
+          {authorizationLetterUri ? t('roleSpecificFields.documentUploads.changeDocument') : t('roleSpecificFields.documentUploads.uploadAuthorizationLetter')}
         </Text>
       </TouchableOpacity>
       {authorizationLetterUri && <Text style={styles.documentName}>{authorizationLetterUri.split('/').pop()}</Text>}
-      <Text style={styles.requiredText}>Required</Text>
+      <Text style={styles.requiredText}>{t('roleSpecificFields.requiredText')}</Text>
 
     </View>
   );

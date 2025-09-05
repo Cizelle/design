@@ -1,52 +1,60 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Switch } from 'react-native-gesture-handler';
+import { Picker } from '@react-native-picker/picker'; // Import the Picker component
+import { useTranslation } from 'react-i18next'; // Import the useTranslation hook
 
-// A placeholder for your Settings screen
 const SettingsScreen = () => {
+  const { t, i18n } = useTranslation();
+  const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
+
   const [isEmergencyAlertsEnabled, setEmergencyAlertsEnabled] = React.useState(true);
   const [isHazardReportsEnabled, setHazardReportsEnabled] = React.useState(true);
   const [isFamilyUpdatesEnabled, setFamilyUpdatesEnabled] = React.useState(true);
   const [isSystemUpdatesEnabled, setSystemUpdatesEnabled] = React.useState(false);
   const [isCommunityNewsEnabled, setCommunityNewsEnabled] = React.useState(true);
 
-  // You can add state hooks for App Permissions here as needed
   const [isLocationPermissionEnabled, setLocationPermissionEnabled] = React.useState(true);
   const [isCameraPermissionEnabled, setCameraPermissionEnabled] = React.useState(false);
   const [isNotificationsPermissionEnabled, setNotificationsPermissionEnabled] = React.useState(true);
   const [isMicrophonePermissionEnabled, setMicrophonePermissionEnabled] = React.useState(false);
+
+  const changeLanguage = (language: string) => {
+    i18n.changeLanguage(language);
+    setSelectedLanguage(language);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
         {/* Header Section */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Settings</Text>
-          <Text style={styles.headerSubtitle}>Customize your experience</Text>
+          <Text style={styles.headerTitle}>{t('settings.header.title')}</Text>
+          <Text style={styles.headerSubtitle}>{t('settings.header.subtitle')}</Text>
         </View>
 
         {/* Account Settings Section */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Account Settings</Text>
+          <Text style={styles.sectionTitle}>{t('settings.account.title')}</Text>
           <TouchableOpacity style={styles.listItem}>
             <View style={styles.listItemContent}>
-              <Text style={styles.listItemText}>Edit Profile</Text>
-              <Text style={styles.listItemSubText}>Update personal information</Text>
+              <Text style={styles.listItemText}>{t('settings.account.editProfile.text')}</Text>
+              <Text style={styles.listItemSubText}>{t('settings.account.editProfile.subtext')}</Text>
             </View>
             <Icon name="chevron-right" size={24} color="#ccc" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.listItem}>
             <View style={styles.listItemContent}>
-              <Text style={styles.listItemText}>Emergency Contacts</Text>
-              <Text style={styles.listItemSubText}>Manage your emergency contact list</Text>
+              <Text style={styles.listItemText}>{t('settings.account.emergencyContacts.text')}</Text>
+              <Text style={styles.listItemSubText}>{t('settings.account.emergencyContacts.subtext')}</Text>
             </View>
             <Icon name="chevron-right" size={24} color="#ccc" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.listItem}>
             <View style={styles.listItemContent}>
-              <Text style={styles.listItemText}>Medical Information</Text>
-              <Text style={styles.listItemSubText}>Update medical details and allergies</Text>
+              <Text style={styles.listItemText}>{t('settings.account.medicalInfo.text')}</Text>
+              <Text style={styles.listItemSubText}>{t('settings.account.medicalInfo.subtext')}</Text>
             </View>
             <Icon name="chevron-right" size={24} color="#ccc" />
           </TouchableOpacity>
@@ -54,11 +62,11 @@ const SettingsScreen = () => {
 
         {/* Notifications Section */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Notifications</Text>
+          <Text style={styles.sectionTitle}>{t('settings.notifications.title')}</Text>
           <View style={styles.listItem}>
             <View style={styles.listItemContent}>
-              <Text style={styles.listItemText}>Emergency Alerts</Text>
-              <Text style={styles.listItemSubText}>Critical emergency notifications</Text>
+              <Text style={styles.listItemText}>{t('settings.notifications.emergencyAlerts.text')}</Text>
+              <Text style={styles.listItemSubText}>{t('settings.notifications.emergencyAlerts.subtext')}</Text>
             </View>
             <Switch
               onValueChange={setEmergencyAlertsEnabled}
@@ -69,8 +77,8 @@ const SettingsScreen = () => {
           </View>
           <View style={styles.listItem}>
             <View style={styles.listItemContent}>
-              <Text style={styles.listItemText}>Hazard Reports</Text>
-              <Text style={styles.listItemSubText}>New hazard reports in your area</Text>
+              <Text style={styles.listItemText}>{t('settings.notifications.hazardReports.text')}</Text>
+              <Text style={styles.listItemSubText}>{t('settings.notifications.hazardReports.subtext')}</Text>
             </View>
             <Switch
               onValueChange={setHazardReportsEnabled}
@@ -81,8 +89,8 @@ const SettingsScreen = () => {
           </View>
           <View style={styles.listItem}>
             <View style={styles.listItemContent}>
-              <Text style={styles.listItemText}>Family Updates</Text>
-              <Text style={styles.listItemSubText}>Family member status updates</Text>
+              <Text style={styles.listItemText}>{t('settings.notifications.familyUpdates.text')}</Text>
+              <Text style={styles.listItemSubText}>{t('settings.notifications.familyUpdates.subtext')}</Text>
             </View>
             <Switch
               onValueChange={setFamilyUpdatesEnabled}
@@ -93,8 +101,8 @@ const SettingsScreen = () => {
           </View>
           <View style={styles.listItem}>
             <View style={styles.listItemContent}>
-              <Text style={styles.listItemText}>System Updates</Text>
-              <Text style={styles.listItemSubText}>App updates and maintenance</Text>
+              <Text style={styles.listItemText}>{t('settings.notifications.systemUpdates.text')}</Text>
+              <Text style={styles.listItemSubText}>{t('settings.notifications.systemUpdates.subtext')}</Text>
             </View>
             <Switch
               onValueChange={setSystemUpdatesEnabled}
@@ -105,8 +113,8 @@ const SettingsScreen = () => {
           </View>
           <View style={styles.listItem}>
             <View style={styles.listItemContent}>
-              <Text style={styles.listItemText}>Community News</Text>
-              <Text style={styles.listItemSubText}>Community bulletins and news</Text>
+              <Text style={styles.listItemText}>{t('settings.notifications.communityNews.text')}</Text>
+              <Text style={styles.listItemSubText}>{t('settings.notifications.communityNews.subtext')}</Text>
             </View>
             <Switch
               onValueChange={setCommunityNewsEnabled}
@@ -119,11 +127,11 @@ const SettingsScreen = () => {
         
         {/* App Permissions Section */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>App Permissions</Text>
+          <Text style={styles.sectionTitle}>{t('settings.permissions.title')}</Text>
           <View style={styles.listItem}>
             <View style={styles.listItemContent}>
-              <Text style={styles.listItemText}>Location</Text>
-              <Text style={styles.listItemSubText}>Allow location services for emergency tracking</Text>
+              <Text style={styles.listItemText}>{t('settings.permissions.location.text')}</Text>
+              <Text style={styles.listItemSubText}>{t('settings.permissions.location.subtext')}</Text>
             </View>
             <Switch
               onValueChange={setLocationPermissionEnabled}
@@ -134,8 +142,8 @@ const SettingsScreen = () => {
           </View>
           <View style={styles.listItem}>
             <View style={styles.listItemContent}>
-              <Text style={styles.listItemText}>Camera</Text>
-              <Text style={styles.listItemSubText}>Allow access to your camera for reports</Text>
+              <Text style={styles.listItemText}>{t('settings.permissions.camera.text')}</Text>
+              <Text style={styles.listItemSubText}>{t('settings.permissions.camera.subtext')}</Text>
             </View>
             <Switch
               onValueChange={setCameraPermissionEnabled}
@@ -146,8 +154,8 @@ const SettingsScreen = () => {
           </View>
           <View style={styles.listItem}>
             <View style={styles.listItemContent}>
-              <Text style={styles.listItemText}>Notifications</Text>
-              <Text style={styles.listItemSubText}>Receive push notifications</Text>
+              <Text style={styles.listItemText}>{t('settings.permissions.notifications.text')}</Text>
+              <Text style={styles.listItemSubText}>{t('settings.permissions.notifications.subtext')}</Text>
             </View>
             <Switch
               onValueChange={setNotificationsPermissionEnabled}
@@ -158,8 +166,8 @@ const SettingsScreen = () => {
           </View>
           <View style={styles.listItem}>
             <View style={styles.listItemContent}>
-              <Text style={styles.listItemText}>Microphone</Text>
-              <Text style={styles.listItemSubText}>Allow access to your microphone for voice reports</Text>
+              <Text style={styles.listItemText}>{t('settings.permissions.microphone.text')}</Text>
+              <Text style={styles.listItemSubText}>{t('settings.permissions.microphone.subtext')}</Text>
             </View>
             <Switch
               onValueChange={setMicrophonePermissionEnabled}
@@ -167,6 +175,26 @@ const SettingsScreen = () => {
               trackColor={{ false: '#767577', true: '#138D35' }}
               thumbColor={isMicrophonePermissionEnabled ? '#f4f3f4' : '#f4f3f4'}
             />
+          </View>
+        </View>
+
+        {/* Language Settings Section - New Section */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>{t('settings.language.title')}</Text>
+          <View style={styles.listItem}>
+            <View style={styles.listItemContent}>
+              <Text style={styles.listItemText}>{t('settings.language.changeLanguage')}</Text>
+            </View>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={selectedLanguage}
+                onValueChange={(itemValue) => changeLanguage(itemValue)}
+                style={styles.picker}
+              >
+                <Picker.Item label={t('languages.english')} value="en" />
+                <Picker.Item label={t('languages.hindi')} value="hi" />
+              </Picker>
+            </View>
           </View>
         </View>
 
@@ -235,6 +263,18 @@ const styles = StyleSheet.create({
   listItemSubText: {
     fontSize: 12,
     color: '#999',
+  },
+  pickerWrapper: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginLeft: 10,
+  },
+  picker: {
+    width: '100%',
+    height: 40,
   },
 });
 

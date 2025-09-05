@@ -1,35 +1,46 @@
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, FlatList } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 
-// Define the data for the simulation games
-const simulationGames = [
-  {
-    id: '1',
-    title: 'High Tide Hero',
-    description: 'A survival game where you make quick decisions to find a safe location and collect essential resources as a high wave or swell surge approaches. Earn points for speed and accuracy.',
-    icon: 'water-alert',
-    color: '#3498db',
-  },
-  {
-    id: '2',
-    title: 'Coastal Commander',
-    description: 'A strategy game where you act as a disaster manager. Allocate rescue teams, resources, and set up shelters to prepare for and respond to a simulated storm surge.',
-    icon: 'city',
-    color: '#2ecc71',
-  },
-  {
-    id: '3',
-    title: 'Tsunami Trivia Rush',
-    description: 'A fast-paced quiz game. Test your knowledge of tsunami safety, evacuation routes, and warning signs. The faster you answer correctly, the more points you earn.',
-    icon: 'book-open-variant',
-    color: '#e74c3c',
-  },
-];
+// Define a TypeScript interface for the data structure
+interface SimulationGame {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  color: string;
+}
 
 const SimulationDrillScreen = () => {
+  const { t } = useTranslation();
 
-const renderItem = ({ item }: { item: { id: string; title: string; description: string; icon: string; color: string } }) => (
+  // The data is now defined inside the component to use the t function
+  const simulationGames: SimulationGame[] = [
+    {
+      id: '1',
+      title: t('simulation.drills.highTideHero.title'),
+      description: t('simulation.drills.highTideHero.description'),
+      icon: 'water-alert',
+      color: '#3498db',
+    },
+    {
+      id: '2',
+      title: t('simulation.drills.coastalCommander.title'),
+      description: t('simulation.drills.coastalCommander.description'),
+      icon: 'city',
+      color: '#2ecc71',
+    },
+    {
+      id: '3',
+      title: t('simulation.drills.tsunamiTriviaRush.title'),
+      description: t('simulation.drills.tsunamiTriviaRush.description'),
+      icon: 'book-open-variant',
+      color: '#e74c3c',
+    },
+  ];
+
+  const renderItem = ({ item }: { item: SimulationGame }) => (
     <TouchableOpacity style={styles.card}>
       <View style={styles.cardHeader}>
         <Icon name={item.icon} size={30} color={item.color} />
@@ -37,7 +48,7 @@ const renderItem = ({ item }: { item: { id: string; title: string; description: 
       </View>
       <Text style={styles.cardDescription}>{item.description}</Text>
       <View style={styles.playButton}>
-        <Text style={styles.playButtonText}>Play Drill</Text>
+        <Text style={styles.playButtonText}>{t('simulation.playButtonText')}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -45,9 +56,9 @@ const renderItem = ({ item }: { item: { id: string; title: string; description: 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Simulation Drills</Text>
+        <Text style={styles.headerTitle}>{t('simulation.headerTitle')}</Text>
         <Text style={styles.headerSubtitle}>
-          Practice preparedness and earn rewards through interactive games.
+          {t('simulation.headerSubtitle')}
         </Text>
       </View>
       <FlatList

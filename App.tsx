@@ -5,6 +5,7 @@ import LoginScreen from './src/screens/auth/LoginScreen';
 import RegisterScreen from './src/screens/auth/RegisterScreen';
 import ChooseRoleScreen from './src/screens/auth/ChooseRoleScreen';
 import MainDrawerNavigator from './src/navigation/MainTabNavigator'; // Import the new tab navigator
+import './src/i18n';
 
 // This defines the screens in your main stack.
 // 'MainTabs' is now a screen that contains the entire tab bar.

@@ -13,6 +13,7 @@ import AddInfoMedicalScreen from '../screens/profile/AddInfoMedicalScreen';
 import ProfileConfirmationScreen from '../screens/auth/ProfileConfirmationScreen';
 import SosScreen from '../screens/hazards/SosScreen';
 import { View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 const OfflineScreen = () => <></>;
 
@@ -66,6 +67,8 @@ const ProfileStackScreen = () => {
 // Main Tab Navigator
 const MainTabs = ({ route }: any) => {
   const { username } = route.params;
+  const { t } = useTranslation();
+
   return (
     <Tab.Navigator
       initialRouteName="Dashboard"
@@ -112,12 +115,14 @@ const MainTabs = ({ route }: any) => {
         name="Dashboard"
         component={DashboardStackScreen}
         initialParams={{ username }}
+        options={{ tabBarLabel: t('navigation.dashboard') }}
       />
       {/* The Family tab is disabled by setting a custom, non-interactive button */}
       <Tab.Screen
         name="Family"
         component={() => null} // Point to a dummy component
         options={{
+          tabBarLabel: t('navigation.family'),
           tabBarButton: (props) => (
             <View {...props} style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
               {props.children}
@@ -125,9 +130,21 @@ const MainTabs = ({ route }: any) => {
           ),
         }}
       />
-      <Tab.Screen name="SOS" component={SosScreen} />
-      <Tab.Screen name="Offline" component={OfflineScreen} />
-      <Tab.Screen name="Profile" component={ProfileStackScreen} />
+      <Tab.Screen
+        name="SOS"
+        component={SosScreen}
+        options={{ tabBarLabel: t('navigation.sos') }}
+      />
+      <Tab.Screen
+        name="Offline"
+        component={OfflineScreen}
+        options={{ tabBarLabel: t('navigation.offline') }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileStackScreen}
+        options={{ tabBarLabel: t('navigation.profile') }}
+      />
     </Tab.Navigator>
   );
 };

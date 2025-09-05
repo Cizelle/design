@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 
 const genders = ['Male', 'Female', 'Other'];
 const emotionalStatuses = ['NORMAL', 'STRESSED', 'ANXIOUS', 'CALM'];
 
 const AddInfoPersonalScreen = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const [dob, setDob] = useState('');
   const [gender, setGender] = useState('');
@@ -23,7 +25,7 @@ const AddInfoPersonalScreen = () => {
   const handleNext = () => {
     // Basic validation
     if (!dob || !gender || !height || !weight || !address) {
-      Alert.alert('Incomplete Form', 'Please fill in all required fields.');
+      Alert.alert(t('personal.alert.incompleteTitle'), t('personal.alert.incompleteMessage'));
       return;
     }
 
@@ -40,13 +42,13 @@ const AddInfoPersonalScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="arrow-left" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Personal Details</Text>
+        <Text style={styles.headerTitle}>{t('personal.headerTitle')}</Text>
       </View>
       <View style={styles.content}>
-        <Text style={styles.inputLabel}>Date of Birth *</Text>
-        <TextInput style={styles.input} placeholder="YYYY-MM-DD" value={dob} onChangeText={setDob} />
+        <Text style={styles.inputLabel}>{t('personal.form.dobLabel')}</Text>
+        <TextInput style={styles.input} placeholder={t('personal.form.dobPlaceholder')} value={dob} onChangeText={setDob} />
 
-        <Text style={styles.inputLabel}>Gender *</Text>
+        <Text style={styles.inputLabel}>{t('personal.form.genderLabel')}</Text>
         <View style={styles.selectorContainer}>
           {genders.map((g) => (
             <TouchableOpacity
@@ -54,30 +56,30 @@ const AddInfoPersonalScreen = () => {
               style={[styles.selectorButton, gender === g && styles.selectorButtonActive]}
               onPress={() => setGender(g)}
             >
-              <Text style={[styles.selectorButtonText, gender === g && styles.selectorButtonTextActive]}>{g}</Text>
+              <Text style={[styles.selectorButtonText, gender === g && styles.selectorButtonTextActive]}>{t(`personal.form.genders.${g.toLowerCase()}`)}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={styles.inputLabel}>Height (cm) *</Text>
-        <TextInput style={styles.input} placeholder="e.g. 175" keyboardType="numeric" value={height} onChangeText={setHeight} />
+        <Text style={styles.inputLabel}>{t('personal.form.heightLabel')}</Text>
+        <TextInput style={styles.input} placeholder={t('personal.form.heightPlaceholder')} keyboardType="numeric" value={height} onChangeText={setHeight} />
 
-        <Text style={styles.inputLabel}>Weight (kg) *</Text>
-        <TextInput style={styles.input} placeholder="e.g. 70" keyboardType="numeric" value={weight} onChangeText={setWeight} />
+        <Text style={styles.inputLabel}>{t('personal.form.weightLabel')}</Text>
+        <TextInput style={styles.input} placeholder={t('personal.form.weightPlaceholder')} keyboardType="numeric" value={weight} onChangeText={setWeight} />
         
-        <Text style={styles.inputLabel}>Address *</Text>
-        <TextInput style={styles.descriptionInput} placeholder="Street Address" multiline value={address} onChangeText={setAddress} />
+        <Text style={styles.inputLabel}>{t('personal.form.addressLabel')}</Text>
+        <TextInput style={styles.descriptionInput} placeholder={t('personal.form.addressPlaceholder')} multiline value={address} onChangeText={setAddress} />
         
-        <Text style={styles.inputLabel}>City</Text>
-        <TextInput style={styles.input} placeholder="City" value={city} onChangeText={setCity} />
+        <Text style={styles.inputLabel}>{t('personal.form.cityLabel')}</Text>
+        <TextInput style={styles.input} placeholder={t('personal.form.cityPlaceholder')} value={city} onChangeText={setCity} />
 
-        <Text style={styles.inputLabel}>State</Text>
-        <TextInput style={styles.input} placeholder="State" value={state} onChangeText={setState} />
+        <Text style={styles.inputLabel}>{t('personal.form.stateLabel')}</Text>
+        <TextInput style={styles.input} placeholder={t('personal.form.statePlaceholder')} value={state} onChangeText={setState} />
 
-        <Text style={styles.inputLabel}>Country</Text>
-        <TextInput style={styles.input} placeholder="Country" value={country} onChangeText={setCountry} />
+        <Text style={styles.inputLabel}>{t('personal.form.countryLabel')}</Text>
+        <TextInput style={styles.input} placeholder={t('personal.form.countryPlaceholder')} value={country} onChangeText={setCountry} />
         
-        <Text style={styles.inputLabel}>Emotional Status</Text>
+        <Text style={styles.inputLabel}>{t('personal.form.emotionalStatusLabel')}</Text>
         <View style={styles.selectorContainer}>
           {emotionalStatuses.map((status) => (
             <TouchableOpacity
@@ -85,19 +87,19 @@ const AddInfoPersonalScreen = () => {
               style={[styles.selectorButton, emotionalStatus === status && styles.selectorButtonActive]}
               onPress={() => setEmotionalStatus(status)}
             >
-              <Text style={[styles.selectorButtonText, emotionalStatus === status && styles.selectorButtonTextActive]}>{status}</Text>
+              <Text style={[styles.selectorButtonText, emotionalStatus === status && styles.selectorButtonTextActive]}>{t(`personal.form.emotionalStatuses.${status.toLowerCase()}`)}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={styles.inputLabel}>Emergency Contact Name</Text>
-        <TextInput style={styles.input} placeholder="Contact Name" value={emergencyContactName} onChangeText={setEmergencyContactName} />
+        <Text style={styles.inputLabel}>{t('personal.form.emergencyContactNameLabel')}</Text>
+        <TextInput style={styles.input} placeholder={t('personal.form.emergencyContactNamePlaceholder')} value={emergencyContactName} onChangeText={setEmergencyContactName} />
         
-        <Text style={styles.inputLabel}>Emergency Contact Phone</Text>
-        <TextInput style={styles.input} placeholder="Contact Phone" keyboardType="phone-pad" value={emergencyContactPhone} onChangeText={setEmergencyContactPhone} />
+        <Text style={styles.inputLabel}>{t('personal.form.emergencyContactPhoneLabel')}</Text>
+        <TextInput style={styles.input} placeholder={t('personal.form.emergencyContactPhonePlaceholder')} keyboardType="phone-pad" value={emergencyContactPhone} onChangeText={setEmergencyContactPhone} />
 
         <TouchableOpacity style={styles.mainButton} onPress={handleNext}>
-          <Text style={styles.mainButtonText}>Next</Text>
+          <Text style={styles.mainButtonText}>{t('personal.form.nextButton')}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

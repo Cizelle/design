@@ -3,20 +3,22 @@ import React from 'react';
 import { View, Text, StyleSheet} from 'react-native';
 import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 
 const DrawerMenu = (props: any) => {
   const { navigation } = props;
+  const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
       <DrawerContentScrollView {...props}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Menu</Text>
-          <Text style={styles.headerSubtitle}>Citizen Dashboard</Text>
+          <Text style={styles.headerTitle}>{t('drawer.header.title')}</Text>
+          <Text style={styles.headerSubtitle}>{t('drawer.header.subtitle')}</Text>
         </View>
 
         <DrawerItem
-          label="Donations"
+          label={t('drawer.menuItems.donations')}
           labelStyle={styles.drawerLabel}
           // eslint-disable-next-line react/no-unstable-nested-components, @typescript-eslint/no-unused-vars
           icon={({ color, size }) => (
@@ -26,16 +28,16 @@ const DrawerMenu = (props: any) => {
           onPress={() => { /* Navigate to Donations screen if needed */ }}
         />
         <DrawerItem
-          label="Simulation Drills"
+          label={t('drawer.menuItems.simulationDrills')}
           labelStyle={styles.drawerLabel}
           icon={({ color, size }) => (
             <Icon name="gamepad-variant-outline" size={size} color="#138D35" />
           )}
           style={styles.drawerItem}
-onPress={() => { navigation.navigate('SimulationDrills') }}
+          onPress={() => { navigation.navigate('SimulationDrills') }}
         />
         <DrawerItem
-          label="Resources"
+          label={t('drawer.menuItems.resources')}
           labelStyle={styles.drawerLabel}
           icon={({ color, size }) => (
             <Icon name="book-open-outline" size={size} color="#138D35" />
@@ -44,7 +46,7 @@ onPress={() => { navigation.navigate('SimulationDrills') }}
           onPress={() => { 'Resources' }}
         />
         <DrawerItem
-          label="All Reports"
+          label={t('drawer.menuItems.allReports')}
           labelStyle={styles.drawerLabel}
           icon={({ color, size }) => (
             <Icon name="file-document-outline" size={size} color="#138D35" />
@@ -53,7 +55,7 @@ onPress={() => { navigation.navigate('SimulationDrills') }}
           onPress={() => { /* Navigate to All Reports screen */ }}
         />
         <DrawerItem
-          label="Missing Person Finder"
+          label={t('drawer.menuItems.missingPersonFinder')}
           labelStyle={styles.drawerLabel}
           icon={({ color, size }) => (
             <Icon name="magnify" size={size} color="#138D35" />
@@ -62,7 +64,7 @@ onPress={() => { navigation.navigate('SimulationDrills') }}
           onPress={() => {'MissingPersonFinder' }}
         />
         <DrawerItem
-          label="Settings"
+          label={t('drawer.menuItems.settings')}
           labelStyle={styles.drawerLabel}
           icon={({ color, size }) => (
             <Icon name="cog-outline" size={size} color="#138D35" />
@@ -71,7 +73,7 @@ onPress={() => { navigation.navigate('SimulationDrills') }}
           onPress={() => { 'Settings' }}
         />
         <DrawerItem
-          label="Logout"
+          label={t('drawer.menuItems.logout')}
           labelStyle={[styles.drawerLabel, styles.logoutLabel]}
           icon={({ color, size }) => (
             <Icon name="logout" size={size} color="#D45348" />
@@ -83,7 +85,7 @@ onPress={() => { navigation.navigate('SimulationDrills') }}
 
       <View style={styles.bottomStatus}>
         <View style={styles.onlineIndicator} />
-        <Text style={styles.statusText}>Online • All services active</Text>
+        <Text style={styles.statusText}>{t('drawer.status.onlineText')}</Text>
       </View>
     </View>
   );

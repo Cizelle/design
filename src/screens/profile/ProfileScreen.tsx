@@ -4,10 +4,12 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ProfileStackParamList } from '../../navigation/MainTabNavigator';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 
 type Props = NativeStackScreenProps<ProfileStackParamList, 'ProfileHome'>;
 
 const ProfileScreen: React.FC<Props> = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
 
   // Placeholder data for demonstration
@@ -19,10 +21,12 @@ const ProfileScreen: React.FC<Props> = () => {
     // You'd fetch these details from your backend
   };
 
+  const notProvidedStatus = t('profile.status.notProvided');
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Profile</Text>
+        <Text style={styles.headerTitle}>{t('profile.headerTitle')}</Text>
       </View>
 
       <View style={styles.profileCard}>
@@ -41,35 +45,35 @@ const ProfileScreen: React.FC<Props> = () => {
         style={styles.mainButton}
         onPress={() => navigation.navigate('AddPersonal')}
       >
-        <Text style={styles.mainButtonText}>Add More Info</Text>
+        <Text style={styles.mainButtonText}>{t('profile.addButtonText')}</Text>
       </TouchableOpacity>
 
       {/* Placeholder for other details that will be filled in */}
       <View style={styles.infoSection}>
-        <Text style={styles.infoTitle}>Personal Details</Text>
+        <Text style={styles.infoTitle}>{t('profile.sections.personal.title')}</Text>
         <View style={styles.infoRow}>
           <Icon name="calendar" size={20} color="#666" style={styles.infoIcon} />
-          <Text style={styles.infoRowText}>Date of Birth: Not provided</Text>
+          <Text style={styles.infoRowText}>{t('profile.sections.personal.dobLabel')}{notProvidedStatus}</Text>
         </View>
         <View style={styles.infoRow}>
           <Icon name="gender-male-female" size={20} color="#666" style={styles.infoIcon} />
-          <Text style={styles.infoRowText}>Gender: Not provided</Text>
+          <Text style={styles.infoRowText}>{t('profile.sections.personal.genderLabel')}{notProvidedStatus}</Text>
         </View>
         <View style={styles.infoRow}>
           <Icon name="map-marker-outline" size={20} color="#666" style={styles.infoIcon} />
-          <Text style={styles.infoRowText}>Address: Not provided</Text>
+          <Text style={styles.infoRowText}>{t('profile.sections.personal.addressLabel')}{notProvidedStatus}</Text>
         </View>
       </View>
 
       <View style={styles.infoSection}>
-        <Text style={styles.infoTitle}>Medical Details</Text>
+        <Text style={styles.infoTitle}>{t('profile.sections.medical.title')}</Text>
         <View style={styles.infoRow}>
           <Icon name="hospital-box-outline" size={20} color="#666" style={styles.infoIcon} />
-          <Text style={styles.infoRowText}>Blood Group: Not provided</Text>
+          <Text style={styles.infoRowText}>{t('profile.sections.medical.bloodGroupLabel')}{notProvidedStatus}</Text>
         </View>
         <View style={styles.infoRow}>
           <Icon name="needle" size={20} color="#666" style={styles.infoIcon} />
-          <Text style={styles.infoRowText}>Allergies: Not provided</Text>
+          <Text style={styles.infoRowText}>{t('profile.sections.medical.allergiesLabel')}{notProvidedStatus}</Text>
         </View>
       </View>
     </ScrollView>

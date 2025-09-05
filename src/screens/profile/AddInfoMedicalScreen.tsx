@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
 const AddInfoMedicalScreen = ({ route }: any) => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const [allergies, setAllergies] = useState('');
   const [disabilities, setDisabilities] = useState('');
@@ -20,7 +22,7 @@ const AddInfoMedicalScreen = ({ route }: any) => {
   const handleComplete = () => {
     // Basic validation
     if (!bloodGroup) {
-      Alert.alert('Incomplete Form', 'Please select a blood group.');
+      Alert.alert(t('medical.alert.incompleteTitle'), t('medical.alert.incompleteMessage'));
       return;
     }
     const medicalData = { allergies, disabilities, bloodGroup, hospitalNames, pastMedicalRecord, medicalReportsFile };
@@ -28,7 +30,7 @@ const AddInfoMedicalScreen = ({ route }: any) => {
     console.log('Full Profile Data:', fullProfileData);
     
     // Simulate API call to save data
-    Alert.alert('Profile Updated!', 'Your medical and personal information has been saved.');
+    Alert.alert(t('medical.alert.successTitle'), t('medical.alert.successMessage'));
     navigation.navigate('ProfileConfirmation');
   };
 
@@ -38,10 +40,10 @@ const AddInfoMedicalScreen = ({ route }: any) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="arrow-left" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Medical Details</Text>
+        <Text style={styles.headerTitle}>{t('medical.headerTitle')}</Text>
       </View>
       <View style={styles.content}>
-        <Text style={styles.inputLabel}>Blood Group *</Text>
+        <Text style={styles.inputLabel}>{t('medical.form.bloodGroupLabel')}</Text>
         <View style={styles.selectorContainer}>
           {bloodGroups.map((group) => (
             <TouchableOpacity
@@ -54,26 +56,50 @@ const AddInfoMedicalScreen = ({ route }: any) => {
           ))}
         </View>
 
-        <Text style={styles.inputLabel}>Allergies</Text>
-        <TextInput style={styles.descriptionInput} placeholder="e.g. Penicillin, bee stings" multiline value={allergies} onChangeText={setAllergies} />
+        <Text style={styles.inputLabel}>{t('medical.form.allergiesLabel')}</Text>
+        <TextInput
+          style={styles.descriptionInput}
+          placeholder={t('medical.form.allergiesPlaceholder')}
+          multiline
+          value={allergies}
+          onChangeText={setAllergies}
+        />
 
-        <Text style={styles.inputLabel}>Disabilities</Text>
-        <TextInput style={styles.descriptionInput} placeholder="e.g. Mobility impairment" multiline value={disabilities} onChangeText={setDisabilities} />
+        <Text style={styles.inputLabel}>{t('medical.form.disabilitiesLabel')}</Text>
+        <TextInput
+          style={styles.descriptionInput}
+          placeholder={t('medical.form.disabilitiesPlaceholder')}
+          multiline
+          value={disabilities}
+          onChangeText={setDisabilities}
+        />
         
-        <Text style={styles.inputLabel}>Past Medical Records</Text>
-        <TextInput style={styles.descriptionInput} placeholder="Summarize past medical history" multiline value={pastMedicalRecord} onChangeText={setPastMedicalRecord} />
+        <Text style={styles.inputLabel}>{t('medical.form.pastMedicalRecordsLabel')}</Text>
+        <TextInput
+          style={styles.descriptionInput}
+          placeholder={t('medical.form.pastMedicalRecordsPlaceholder')}
+          multiline
+          value={pastMedicalRecord}
+          onChangeText={setPastMedicalRecord}
+        />
 
-        <Text style={styles.inputLabel}>Hospital Names</Text>
-        <TextInput style={styles.descriptionInput} placeholder="e.g. Apollo Hospital, Fortis" multiline value={hospitalNames} onChangeText={setHospitalNames} />
+        <Text style={styles.inputLabel}>{t('medical.form.hospitalNamesLabel')}</Text>
+        <TextInput
+          style={styles.descriptionInput}
+          placeholder={t('medical.form.hospitalNamesPlaceholder')}
+          multiline
+          value={hospitalNames}
+          onChangeText={setHospitalNames}
+        />
 
-        <Text style={styles.inputLabel}>Medical Reports</Text>
+        <Text style={styles.inputLabel}>{t('medical.form.medicalReportsLabel')}</Text>
         <TouchableOpacity style={styles.uploadButton}>
           <Icon name="upload" size={20} color="#138D35" />
-          <Text style={styles.uploadText}>Upload File (PDF/DOC)</Text>
+          <Text style={styles.uploadText}>{t('medical.form.uploadButtonText')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.mainButton} onPress={handleComplete}>
-          <Text style={styles.mainButtonText}>Save Details</Text>
+          <Text style={styles.mainButtonText}>{t('medical.form.saveButtonText')}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

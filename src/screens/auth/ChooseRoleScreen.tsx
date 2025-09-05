@@ -1,12 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../App';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
+import { Picker } from '@react-native-picker/picker';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChooseRole'>;
 
 const ChooseRoleScreen: React.FC<Props> = ({ navigation }) => {
+  const { t, i18n } = useTranslation();
+  const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
+
+  const changeLanguage = (language: string) => {
+    i18n.changeLanguage(language);
+    setSelectedLanguage(language);
+  };
 
   const handleRegisterPress = (role: 'citizen' | 'official' | 'analyst') => {
     navigation.navigate('Register', { role });
@@ -16,49 +25,62 @@ const ChooseRoleScreen: React.FC<Props> = ({ navigation }) => {
     {
       id: 'citizen',
       icon: 'account-group',
-      title: 'Citizen',
-      description: 'Report hazards, access emergency services',
+      title: t('roles.citizen.title'),
+      description: t('roles.citizen.description'),
       features: [
-        'Report Hazards',
-        'Submit SOS',
-        'Track Family',
-        'Make Donations',
-        'Emergency Drills',
+        t('roles.citizen.features.reportHazards'),
+        t('roles.citizen.features.submitSOS'),
+        t('roles.citizen.features.trackFamily'),
+        t('roles.citizen.features.makeDonations'),
+        t('roles.citizen.features.emergencyDrills'),
       ],
     },
     {
       id: 'official',
       icon: 'shield-check',
-      title: 'Official',
-      description: 'Validate reports, manage emergency responses',
+      title: t('roles.official.title'),
+      description: t('roles.official.description'),
       features: [
-        'Validate Reports',
-        'Manage Hotspots',
-        'Emergency Response',
-        'Resource Allocation',
+        t('roles.official.features.validateReports'),
+        t('roles.official.features.manageHotspots'),
+        t('roles.official.features.emergencyResponse'),
+        t('roles.official.features.resourceAllocation'),
       ],
     },
     {
       id: 'analyst',
       icon: 'chart-bar',
-      title: 'Analyst',
-      description: 'Monitor trends, analyze data insights',
+      title: t('roles.analyst.title'),
+      description: t('roles.analyst.description'),
       features: [
-        'Social Media Monitoring',
-        'Trend Analysis',
-        'Data Insights',
-        'Generate Reports',
+        t('roles.analyst.features.socialMediaMonitoring'),
+        t('roles.analyst.features.trendAnalysis'),
+        t('roles.analyst.features.dataInsights'),
+        t('roles.analyst.features.generateReports'),
       ],
     },
   ];
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {/* Language Picker */}
+      <View style={styles.languagePickerContainer}>
+        <Text style={styles.languageLabel}>{t('settings.language.changeLanguage')}:</Text>
+        <View style={styles.pickerWrapper}>
+          <Picker
+            selectedValue={selectedLanguage}
+            onValueChange={(itemValue) => changeLanguage(itemValue)}
+            style={styles.picker}
+          >
+            <Picker.Item label={t('languages.english')} value="en" />
+            <Picker.Item label={t('languages.hindi')} value="hi" />
+          </Picker>
+        </View>
+      </View>
+
       <View style={styles.header}>
-        <Text style={styles.mainTitle}>Choose Your Role</Text>
-        <Text style={styles.subtitle}>
-          Select your role to access the appropriate features for coastal hazard management.
-        </Text>
+        <Text style={styles.mainTitle}>{t('roles.chooseRole')}</Text>
+        <Text style={styles.subtitle}>{t('roles.selectRoleDesc')}</Text>
       </View>
 
       <View style={styles.rolesContainer}>
@@ -69,7 +91,7 @@ const ChooseRoleScreen: React.FC<Props> = ({ navigation }) => {
             </View>
             <Text style={styles.roleTitle}>{role.title}</Text>
             <Text style={styles.roleDescription}>{role.description}</Text>
-            <Text style={styles.keyFeaturesTitle}>Key Features:</Text>
+            <Text style={styles.keyFeaturesTitle}>{t('roles.keyFeaturesTitle')}</Text>
             {role.features.map((feature, index) => (
               <View key={index} style={styles.featureItem}>
                 <View style={styles.bullet} />
@@ -80,7 +102,7 @@ const ChooseRoleScreen: React.FC<Props> = ({ navigation }) => {
               style={styles.registerButton}
               onPress={() => handleRegisterPress(role.id as 'citizen' | 'official' | 'analyst')}
             >
-              <Text style={styles.registerButtonText}>Register as {role.title}</Text>
+              <Text style={styles.registerButtonText}>{t('roles.registerButton', { role: role.title })}</Text>
             </TouchableOpacity>
           </View>
         ))}
@@ -95,6 +117,30 @@ const styles = StyleSheet.create({
     backgroundColor: '#f2f2f2',
     paddingVertical: 20,
     alignItems: 'center',
+  },
+  languagePickerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '90%',
+    marginBottom: 20,
+  },
+  languageLabel: {
+    fontSize: 16,
+    color: '#666',
+    marginRight: 10,
+  },
+  pickerWrapper: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  picker: {
+    width: '100%',
+    height: 40,
+    color: '#333',
   },
   header: {
     width: '90%',
@@ -129,14 +175,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
-    borderColor: '#D4EDDA', // Light green border
+    borderColor: '#D4EDDA',
     borderWidth: 1,
   },
   iconContainer: {
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: '#D4EDDA', // Light green background for icon
+    backgroundColor: '#D4EDDA',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 15,
@@ -159,7 +205,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     marginBottom: 10,
-    alignSelf: 'flex-start', // Align left within the card
+    alignSelf: 'flex-start',
   },
   featureItem: {
     flexDirection: 'row',
@@ -171,7 +217,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#138D35', // Green bullet
+    backgroundColor: '#138D35',
     marginRight: 10,
   },
   featureText: {
@@ -180,7 +226,7 @@ const styles = StyleSheet.create({
   },
   registerButton: {
     width: '100%',
-    backgroundColor: '#138D35', // Green button
+    backgroundColor: '#138D35',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
